@@ -1,0 +1,47 @@
+name: 'GitStream CMR'
+description: 'Public github action for GitStream continuous merge platform'
+
+inputs:
+  full-repository:
+    description: 'Path of full Repository'
+    required: true
+    default: 'repository-path-placeholder'
+  head-sha:
+    description: 'Head Sha to checkout to'
+    required: true
+    default: 'head-sha-to-checkout'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout original repository
+      uses: actions/checkout@v2
+      with:
+        repository: "${{ inputs.full-repository }}"
+        ref: "${{ inputs.head-sha }}"
+        fetch-depth: 0
+        path: "usercode/"
+    - name: Create GitStream folder
+      id: create-gitstream-folder
+      shell: bash
+      run: |
+        mkdir gitstream
+    - name: Get Diff Base
+      id: get-diff
+      shell: bash
+      run: |
+        cd usercode/
+        git fetch origin develop
+        git diff origin/develop..HEAD > ../gitstream/mydiff
+    - name: Get CM file
+      id: get-cm-file
+      shell: bash
+      run: |
+        cd usercode/
+        cat gitstream.cm > ../gitstream/rules.cm
+    - name: Run The Action
+      if: always()
+      run: |
+        docker pull linearbdaveloper/gitstream-rules-engine:latest
+        docker run -v $(pwd)/gitstream:/code linearbdaveloper/gitstream-rules-engine
+      shell: bash
