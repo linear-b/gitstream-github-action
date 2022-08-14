@@ -35,8 +35,8 @@ runs:
       shell: bash
       run: |
         cd usercode/
-        git fetch origin "${{ inputs.base-ref }}"
-        git diff origin/"${{ inputs.base-ref }}"..HEAD > ../gitstream/mydiff
+        git fetch origin ${{ inputs.base-ref }}
+        git diff origin/${{ inputs.base-ref }}..HEAD > ../gitstream/mydiff
     - name: Get CM file
       id: get-cm-file
       shell: bash
@@ -47,5 +47,5 @@ runs:
       if: always()
       run: |
         docker pull linearbdaveloper/gitstream-rules-engine:latest
-        docker run -v $(pwd)/gitstream:/code -e HEAD_REF="${{ inputs.head-ref }}" -e BASE_REF="${{ inputs.base-ref }}" linearbdaveloper/gitstream-rules-engine
+        docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ inputs.head-ref }} -e BASE_REF=${{ inputs.base-ref }} linearbdaveloper/gitstream-rules-engine
       shell: bash
