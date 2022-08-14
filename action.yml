@@ -6,10 +6,14 @@ inputs:
     description: 'Path of full Repository'
     required: true
     default: 'repository-path-placeholder'
-  head-sha:
-    description: 'Head Sha to checkout to'
+  head-ref:
+    description: 'Head Branch Ref to checkout to'
     required: true
-    default: 'head-sha-to-checkout'
+    default: 'head-ref-to-checkout'
+  base-ref:
+    description: 'Base Branch Ref to checkout to'
+    required: true
+    default: 'base-ref-to-checkout'
 
 runs:
   using: 'composite'
@@ -18,7 +22,7 @@ runs:
       uses: actions/checkout@v2
       with:
         repository: "${{ inputs.full-repository }}"
-        ref: "${{ inputs.head-sha }}"
+        ref: "${{ inputs.head-ref }}"
         fetch-depth: 0
         path: "usercode/"
     - name: Create GitStream folder
@@ -31,8 +35,8 @@ runs:
       shell: bash
       run: |
         cd usercode/
-        git fetch origin develop
-        git diff origin/develop..HEAD > ../gitstream/mydiff
+        git fetch origin "${{ inputs.base-ref }}"
+        git diff origin/"${{ inputs.base-ref }}"..HEAD > ../gitstream/mydiff
     - name: Get CM file
       id: get-cm-file
       shell: bash
@@ -43,5 +47,5 @@ runs:
       if: always()
       run: |
         docker pull linearbdaveloper/gitstream-rules-engine:latest
-        docker run -v $(pwd)/gitstream:/code linearbdaveloper/gitstream-rules-engine
+        docker run -v $(pwd)/gitstream:/code -e HEAD_REF="${{ inputs.head-ref }}" -e BASE_REF="${{ inputs.base-ref }}" linearbdaveloper/gitstream-rules-engine
       shell: bash
