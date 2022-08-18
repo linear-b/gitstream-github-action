@@ -2,18 +2,21 @@ name: 'GitStream CMR'
 description: 'Public github action for GitStream continuous merge platform'
 
 inputs:
-  full-repository:
+  full_repository:
     description: 'Path of full Repository'
     required: true
-    default: 'repository-path-placeholder'
-  head-ref:
+  head_ref:
     description: 'Head Branch Ref to checkout to'
     required: true
-    default: 'head-ref-to-checkout'
-  base-ref:
+  base_ref:
     description: 'Base Branch Ref to checkout to'
     required: true
-    default: 'base-ref-to-checkout'
+  client_payload:
+    description: the client payload
+    required: true
+  installation_id: 
+    description: the github app installation id
+    required: true
 
 runs:
   using: 'composite'
@@ -21,8 +24,8 @@ runs:
     - name: Checkout original repository
       uses: actions/checkout@v2
       with:
-        repository: "${{ inputs.full-repository }}"
-        ref: "${{ inputs.head-ref }}"
+        repository: "${{ inputs.full_repository }}"
+        ref: "${{ inputs.head_ref }}"
         fetch-depth: 0
         path: "usercode/"
     - name: Create GitStream folder
@@ -47,5 +50,5 @@ runs:
       if: always()
       run: |
         docker pull linearbdaveloper/gitstream-rules-engine:latest
-        docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ inputs.head-ref }} -e BASE_REF=${{ inputs.base-ref }} linearbdaveloper/gitstream-rules-engine
+        docker run -v $(pwd)/gitstream:/code -e INSTALLATION_ID=${{ inputs.installation_id }} -e HEAD_REF=${{ inputs.head_ref }} -e BASE_REF=${{ inputs.base_ref }} -e CLIENT_PAYLOAD=${{ inputs.client_payload }} linearbdaveloper/gitstream-rules-engine
       shell: bash
