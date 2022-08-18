@@ -24,8 +24,8 @@ runs:
     - name: Checkout original repository
       uses: actions/checkout@v2
       with:
-        repository: "${{ inputs.full_repository }}"
-        ref: "${{ inputs.head_ref }}"
+        repository: ${{ inputs.full_repository }}
+        ref: ${{ inputs.head_ref }}
         fetch-depth: 0
         path: "usercode/"
     - name: Create GitStream folder
@@ -40,7 +40,7 @@ runs:
         cd usercode/
         git fetch origin ${{ inputs.base_ref }}
         git fetch origin ${{ inputs.head_ref }}
-        echo ${{ inputs }}
+        echo ${{ github.event.inputs.head_ref }}
         echo ${{ inputs.head_ref }}
         git diff ${{ inputs.head_ref }}..${{ inputs.base_ref }} > ../gitstream/mydiff
     - name: Get CM file
