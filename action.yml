@@ -39,14 +39,12 @@ runs:
       run: |
         cd usercode/
         git fetch origin ${{ github.event.inputs.base_ref }}
-        git fetch origin ${{ github.event.inputs.head_ref }}
         git diff origin/${{ github.event.inputs.head_ref }}..origin/${{ github.event.inputs.base_ref }} > ../gitstream/mydiff
     - name: Get CM file
       id: get-cm-file
       shell: bash
       run: |
         cd usercode/
-        cat .cm/gitstream.cm
         cat .cm/gitstream.cm > ../gitstream/rules.cm
     - name: Run The Action
       if: always()
