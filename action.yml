@@ -16,7 +16,7 @@ inputs:
     required: true
   installation_id: 
     description: the github app installation id
-    required: true
+    required: false
 
 runs:
   using: 'composite'
