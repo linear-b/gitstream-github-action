@@ -39,7 +39,7 @@ runs:
       run: |
         cd usercode/
         git fetch origin ${{ inputs.base_ref }}
-        git diff origin/${{ inputs.head_ref }}..${{ inputs.base_ref }} > ../gitstream/mydiff
+        git diff origin/HEAD..${{ inputs.base_ref }} > ../gitstream/mydiff
     - name: Get CM file
       id: get-cm-file
       shell: bash
