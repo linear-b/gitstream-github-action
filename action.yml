@@ -39,6 +39,7 @@ runs:
       run: |
         cd usercode/
         git fetch origin ${{ inputs.base_ref }}
+        git fetch origin ${{ inputs.head_ref }}
         echo ${{ inputs }}
         echo ${{ inputs.head_ref }}
         git diff ${{ inputs.head_ref }}..${{ inputs.base_ref }} > ../gitstream/mydiff
