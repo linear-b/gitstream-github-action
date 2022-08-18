@@ -40,7 +40,7 @@ runs:
         cd usercode/
         git fetch origin ${{ inputs.base_ref }}
         echo ${{ inputs.base_ref }}
-        echo ${{ inputs.base_ref }}
+        echo ${{ inputs.head_ref }}
         git diff ${{ inputs.head_ref }}..${{ inputs.base_ref }} > ../gitstream/mydiff
     - name: Get CM file
       id: get-cm-file
