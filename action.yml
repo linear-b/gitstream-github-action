@@ -46,6 +46,7 @@ runs:
       shell: bash
       run: |
         cd usercode/
+        cat .cm/gitstream.cm
         cat .cm/gitstream.cm > ../gitstream/rules.cm
     - name: Run The Action
       if: always()
