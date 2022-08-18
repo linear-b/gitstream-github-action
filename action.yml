@@ -24,8 +24,8 @@ runs:
     - name: Checkout original repository
       uses: actions/checkout@v2
       with:
-        repository: ${{ inputs.full_repository }}
-        ref: ${{ inputs.head_ref }}
+        repository: "${{ inputs.full_repository }}"
+        ref: "${{ inputs.head_ref }}"
         fetch-depth: 0
         path: "usercode/"
     - name: Create GitStream folder
