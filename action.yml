@@ -25,7 +25,7 @@ runs:
       uses: actions/checkout@v2
       with:
         repository: ${{ inputs.full_repository }}
-        ref: ${{ inputs.head_ref }}
+        ref: ${{ github.event.inputs.head_ref }}
         fetch-depth: 0
         path: "usercode/"
     - name: Create GitStream folder
@@ -38,11 +38,9 @@ runs:
       shell: bash
       run: |
         cd usercode/
-        git fetch origin ${{ inputs.base_ref }}
-        git fetch origin ${{ inputs.head_ref }}
-        echo ${{ github.event.inputs.head_ref }}
-        echo ${{ inputs.head_ref }}
-        git diff ${{ inputs.head_ref }}..${{ inputs.base_ref }} > ../gitstream/mydiff
+        git fetch origin ${{ github.event.inputs.base_ref }}
+        git fetch origin ${{ github.event.inputs.head_ref }}
+        git diff ${{ github.event.inputs.head_ref }}..${{ github.event.inputs.base_ref }} > ../gitstream/mydiff
     - name: Get CM file
       id: get-cm-file
       shell: bash
@@ -53,5 +51,5 @@ runs:
       if: always()
       run: |
         docker pull linearbdaveloper/gitstream-rules-engine:latest
-        docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ inputs.head_ref }} -e BASE_REF=${{ inputs.base_ref }} -e CLIENT_PAYLOAD=${{ inputs.client_payload }} linearbdaveloper/gitstream-rules-engine
+        docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} linearbdaveloper/gitstream-rules-engine
       shell: bash
