@@ -17,6 +17,9 @@ inputs:
   installation_id: 
     description: the github app installation id
     required: false
+  resolver_url:
+    description: resolver url to send results to
+    required: true
 
 runs:
   using: 'composite'
@@ -50,5 +53,5 @@ runs:
       if: always()
       run: |
         docker pull linearbdaveloper/gitstream-rules-engine:latest
-        docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} linearbdaveloper/gitstream-rules-engine
+        docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} linearbdaveloper/gitstream-rules-engine
       shell: bash
