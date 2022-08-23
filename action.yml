@@ -26,6 +26,7 @@ inputs:
 
 runs:
   using: 'composite'
+  timeout-minutes: 15
   steps:
     - name: Checkout original repository
       uses: actions/checkout@v2
