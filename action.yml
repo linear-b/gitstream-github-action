@@ -26,9 +26,9 @@ inputs:
 
 runs:
   using: 'composite'
-  timeout-minutes: 15
   steps:
     - name: Checkout original repository
+      timeout-minutes: 5
       uses: actions/checkout@v2
       with:
         repository: ${{ inputs.full_repository }}
@@ -41,6 +41,7 @@ runs:
       run: |
         mkdir gitstream
     - name: Get Diff Base
+      timeout-minutes: 5
       id: get-diff
       shell: bash
       run: |
@@ -48,6 +49,7 @@ runs:
         git fetch origin ${{ github.event.inputs.base_ref }}
         git diff origin/${{ github.event.inputs.head_ref }}..origin/${{ github.event.inputs.base_ref }} > ../gitstream/mydiff
     - name: Get CM file
+      timeout-minutes: 5
       id: get-cm-file
       shell: bash
       run: |
