@@ -27,7 +27,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Checkout original repository
+    - name: Checkout head branch
       uses: actions/checkout@v2
       with:
         repository: ${{ inputs.full_repository }}
@@ -46,6 +46,13 @@ runs:
         cd usercode/
         git fetch origin ${{ github.event.inputs.base_ref }}
         git diff origin/${{ github.event.inputs.head_ref }}..origin/${{ github.event.inputs.base_ref }} > ../gitstream/mydiff
+    - name: Checkout base branch
+      uses: actions/checkout@v2
+      with:
+        repository: ${{ inputs.full_repository }}
+        ref: ${{ github.event.inputs.base_ref }}
+        fetch-depth: 0
+        path: "usercode/"
     - name: Get CM file
       id: get-cm-file
       shell: bash
