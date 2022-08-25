@@ -52,12 +52,12 @@ runs:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.base_ref }}
         fetch-depth: 0
-        path: "usercode/"
+        path: "basebranch/"
     - name: Get CM file
       id: get-cm-file
       shell: bash
       run: |
-        cd usercode/
+        cd basebranch/
         cat .cm/gitstream.cm > ../gitstream/rules.cm
     - name: Run The Action
       if: always()
