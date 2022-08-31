@@ -33,32 +33,17 @@ runs:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
         fetch-depth: 0
-        path: "usercode/"
+        path: "headbranch/"
     - name: Create GitStream folder
       id: create-gitstream-folder
       shell: bash
       run: |
         mkdir gitstream
-    - name: Get Diff Base
-      id: get-diff
+    - name: copy usercode to gitstream folder
+      id: copy-user-code-to-gitstream-fodler
       shell: bash
       run: |
-        cd usercode/
-        git fetch origin ${{ github.event.inputs.base_ref }}
-        git diff origin/${{ github.event.inputs.head_ref }}..origin/${{ github.event.inputs.base_ref }} > ../gitstream/mydiff
-    - name: Checkout base branch
-      uses: actions/checkout@v2
-      with:
-        repository: ${{ inputs.full_repository }}
-        ref: ${{ github.event.inputs.base_ref }}
-        fetch-depth: 0
-        path: "basebranch/"
-    - name: Get CM file
-      id: get-cm-file
-      shell: bash
-      run: |
-        cd basebranch/
-        cat .cm/gitstream.cm > ../gitstream/rules.cm
+        cp -r headbranch gitstream/headbranch
     - name: Run The Action
       if: always()
       run: |
