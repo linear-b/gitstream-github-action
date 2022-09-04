@@ -41,7 +41,7 @@ runs:
         path: 'gitstream/'
     - run: |
         cd $(pwd)/gitstream
-        git fetch --no-tags --prune --depth=0 origin +refs/heads/*:refs/remotes/origin/*
+        git fetch --all
       shell: bash
     - name: Run The Action
       if: always()
