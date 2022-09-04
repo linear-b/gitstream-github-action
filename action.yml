@@ -41,7 +41,7 @@ runs:
         path: 'gitstream/'
     - run: |
         cd gitstream
-        git branch --track origin/${{ github.event.inputs.head_ref }} ${{ github.event.inputs.head_ref }}
+        git branch --track origin/${{ github.event.inputs.base_ref }} ${{ github.event.inputs.base_ref }}
         git fetch --all
         git pull --all
       shell: bash
