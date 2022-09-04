@@ -39,7 +39,7 @@ runs:
         ref: ${{ github.event.inputs.head_ref }}
         fetch-depth: 0
         path: 'gitstream/'
-    - run: cd gitstream && git pull --all
+    - run: cd gitstream && git branch --list
       shell: bash
     - name: Run The Action
       if: always()
