@@ -14,7 +14,7 @@ inputs:
   client_payload:
     description: 'The client payload'
     required: true
-  installation_id: 
+  installation_id:
     description: 'The github app installation id'
     required: false
   resolver_url:
@@ -38,8 +38,9 @@ runs:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
         fetch-depth: 0
-        path: "gitstream/"
-      run: |
+        path: 'gitstream/'
+    - run: |
+        cd $(pwd)/gitstream
         git fetch --no-tags --prune --depth=0 origin +refs/heads/*:refs/remotes/origin/*
     - name: Run The Action
       if: always()
