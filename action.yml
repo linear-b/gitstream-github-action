@@ -39,6 +39,8 @@ runs:
         ref: ${{ github.event.inputs.head_ref }}
         fetch-depth: 0
         path: "gitstream/"
+      run: |
+        git fetch --no-tags --prune --depth=0 origin +refs/heads/*:refs/remotes/origin/*
     - name: Run The Action
       if: always()
       run: |
