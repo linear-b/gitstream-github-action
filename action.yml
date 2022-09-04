@@ -41,7 +41,7 @@ runs:
         path: 'gitstream/'
     - run: |
         cd gitstream
-        git branch -r | grep '\->\' | grep '${{ github.event.inputs.base_ref }}' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | while read remote; do git branch --track "${remote#origin/}" "$remote"; done        
+        git branch -r | grep '\->' | grep '${{ github.event.inputs.base_ref }}' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | while read remote; do git branch --track "${remote#origin/}" "$remote"; done        
         git fetch --all
         git pull --all
       shell: bash
