@@ -37,6 +37,7 @@ runs:
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
+        fetch-depth: 0
         path: 'gitstream/'
     - run: |
         cd gitstream
