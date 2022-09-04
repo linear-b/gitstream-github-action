@@ -27,23 +27,18 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Create GitStream folder
+      id: create-gitstream-folder
+      shell: bash
+      run: |
+        mkdir gitstream
     - name: Checkout head branch
       uses: actions/checkout@v2
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
         fetch-depth: 0
-        path: "headbranch/"
-    - name: Create GitStream folder
-      id: create-gitstream-folder
-      shell: bash
-      run: |
-        mkdir gitstream
-    - name: copy usercode to gitstream folder
-      id: copy-user-code-to-gitstream-fodler
-      shell: bash
-      run: |
-        cp -r headbranch gitstream/headbranch
+        path: "gitstream/headbranch"
     - name: Run The Action
       if: always()
       run: |
