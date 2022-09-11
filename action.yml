@@ -28,13 +28,17 @@ jobs:
   create-check-run:
     runs-on: ubuntu-latest
     steps:
+    - name: Echo payload
+      run: |
+        echo "${{ inputs.client_payload }}"
+      shell: bash
     - name: Create GitStream check
       uses: actions/github-script@v3
       id: create-check
       env:
-        OWNER: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}
-        REPO: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).repo }}
-        REF: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headSha }}
+        OWNER: ${{ fromJSON(fromJSON(inputs.client_payload)).owner }}
+        REPO: ${{ fromJSON(fromJSON(inputs.client_payload)).repo }}
+        REF: ${{ fromJSON(fromJSON(inputs.client_payload)).headSha }}
       with:
         script: |
           try {
