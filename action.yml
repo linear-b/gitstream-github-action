@@ -25,29 +25,93 @@ inputs:
     required: false
 
 runs:
-  using: 'composite'
-  steps:
-    - name: Create GitStream folder
-      id: create-gitstream-folder
-      shell: bash
-      run: |
-        mkdir gitstream
-    - name: Checkout head branch
-      uses: actions/checkout@v2
+  create-check-run:
+    steps:
+    - name: Create GitStream check
+      uses: actions/github-script@v3
+      id: create-check
+      env:
+        OWNER: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}
+        REPO: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).repo }}
+        REF: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headSha }}
       with:
-        repository: ${{ inputs.full_repository }}
-        ref: ${{ github.event.inputs.head_ref }}
-        fetch-depth: 0
-        path: 'gitstream/'
-    - run: |
-        cd gitstream
-        git branch -r | grep -v '\->' | grep '${{ github.event.inputs.base_ref }}' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | while read remote; do git branch --track "${remote#origin/}" "$remote"; done        
-        git fetch --all
-        git pull --all
-      shell: bash
-    - name: Run The Action
-      if: always()
-      run: |
-        docker pull gitstream/rules-engine:latest
-        docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} gitstream/rules-engine
-      shell: bash
+        script: |
+          try {
+            await github.checks.create({
+              owner: process.env.OWNER,
+              repo: process.env.REPO,
+              name: 'gitStream.cm',
+              status: 'in_progress',
+              head_sha: process.env.REF
+            });
+          } catch (err) {
+            core.setFailed(`Request failed with error ${err}`);
+          }
+  rules-engine-run:
+    using: 'composite'
+    steps:
+      - name: Create GitStream folder
+        id: create-gitstream-folder
+        shell: bash
+        run: |
+          mkdir gitstream
+      - name: Checkout head branch
+        id: checkout-head-branch
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ inputs.full_repository }}
+          ref: ${{ github.event.inputs.head_ref }}
+          fetch-depth: 0
+          path: 'gitstream/'
+      - name: Create ref to all branches in Repo
+        id: create-ref
+        run: |
+          cd gitstream
+          git branch -r | grep -v '\->' | grep '${{ github.event.inputs.base_ref }}' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | while read remote; do git branch --track "${remote#origin/}" "$remote"; done        
+          git fetch --all
+          git pull --all
+        shell: bash
+      - name: Run The Action
+        id: run-rule-engine
+        if: always()
+        run: |
+          docker pull gitstream/rules-engine:latest
+          docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} gitstream/rules-engine
+        shell: bash
+  update-check-run-on-fail:
+    steps:
+      - name: Update GitStream check on error
+      if: ${{ runs.rules-engine-run.outcome == 'failure' }}
+      uses: actions/github-script@v3
+      id: invoke-check
+      env:
+        OWNER: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}
+        REPO: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).repo }}
+        REF: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headSha }}
+      with:
+        script: |
+          try {
+            const existing = await github.checks.listForRef({
+              owner: process.env.OWNER,
+              repo: process.env.REPO,
+              ref: process.env.REF,
+              check_name: 'gitStream.cm',
+              filter: 'latest'
+            });
+            core.info(`existing: ${JSON.stringify(existing)}`);
+            core.info(`if: ${JSON.stringify(existing.data && existing.data.check_runs.length)}`);
+            if(existing.data && existing.data.check_runs.length) {
+              core.info(`im here`);
+              const updated = await github.checks.update({
+                owner: process.env.OWNER,
+                repo: process.env.REPO,
+                check_run_id: existing.data.check_runs[0].id,
+                status: 'completed',
+                conclusion: 'failure'
+              });
+              core.info(`and here`);
+              core.info(`done: ${JSON.stringify(updated)}`);
+            }
+          } catch (err) {
+            core.setFailed(`Request failed with error ${err}`);
+          }
