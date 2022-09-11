@@ -25,7 +25,6 @@ inputs:
     required: false
 
 runs:
-  runs-on: ubuntu-latest
   using: 'composite'
   steps:
     - name: Create GitStream check
