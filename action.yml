@@ -24,8 +24,9 @@ inputs:
     description: 'Optional token for resolver'
     required: false
 
-runs:
+jobs:
   create-check-run:
+    runs-on: ubuntu-latest
     steps:
     - name: Create GitStream check
       uses: actions/github-script@v3
@@ -48,6 +49,7 @@ runs:
             core.setFailed(`Request failed with error ${err}`);
           }
   rules-engine-run:
+    runs-on: ubuntu-latest
     using: 'composite'
     steps:
       - name: Create GitStream folder
@@ -79,6 +81,7 @@ runs:
           docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} gitstream/rules-engine
         shell: bash
   update-check-run-on-fail:
+    runs-on: ubuntu-latest
     steps:
       - name: Update GitStream check on error
       if: ${{ runs.rules-engine-run.outcome == 'failure' }}
