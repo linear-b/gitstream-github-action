@@ -52,7 +52,6 @@ runs:
     - name: Run The Action
       if: always()
       run: >-
-        ddApiKey=${{ github.event.inputs.client_payload.ddApiKey }}
         SECONDS=0
         docker pull gitstream/rules-engine:yeela
         echo "docker pull took $SECONDS seconds"
