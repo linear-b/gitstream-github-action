@@ -53,13 +53,12 @@ runs:
       if: always()
       run: |
         SECONDS=0
-        echo "test ${{ github.event.inputs.client_payload.ddApiKey }}"
-        echo "payload ${{ github.event.inputs.client_payload }}"
-        ddApiKey=${{ github.event.inputs.client_payload.ddApiKey }}
-        echo "api key ${ddApiKey}"
+        DD_API_KEY=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".ddApiKey")
+        echo "test $DD_API_KEY"
+        echo "${{ github.event.inputs.client_payload }}"
         docker pull gitstream/rules-engine:yeela
-        echo "docker pull took ${SECONDS} seconds"
+        echo "docker pull took $SECONDS seconds"
         SECONDS=0
         docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
-        echo "docker run took ${SECONDS} seconds"
+        echo "docker run took $SECONDS seconds"
       shell: bash
