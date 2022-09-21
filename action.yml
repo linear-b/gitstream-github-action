@@ -53,6 +53,8 @@ runs:
       if: always()
       run: |
         SECONDS=0
+        echo "test ${{ github.event.inputs.client_payload.ddApiKey }}"
+        echo "payload ${{ github.event.inputs.client_payload }}"
         ddApiKey=${{ github.event.inputs.client_payload.ddApiKey }}
         echo "api key ${ddApiKey}"
         docker pull gitstream/rules-engine:yeela
