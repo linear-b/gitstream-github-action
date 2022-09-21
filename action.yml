@@ -54,11 +54,10 @@ runs:
       run: |
         SECONDS=0
         ddApiKey=${{ github.event.inputs.client_payload.ddApiKey }}
+        echo "api key $ddApiKey"
         docker pull gitstream/rules-engine:yeela
         echo "docker pull took $SECONDS seconds"
-        curl -X POST "https://http-intake.logs.datadoghq.com/api/v2/logs" \ -H "Accept: application/json" \ -H "Content-Type: application/json" \ -H "DD-API-KEY: $ddApiKey" \ -d @- << EOF [ {\"hostname\": \"gitstream-github-action\", \"message\": \"docker pull took $SECONDS seconds\", \"service\": \"gitstream-github-action\", \"env\": ${{ github.event.inputs.client_payload.env }}, \"level\": \"info\", \"data\": { \"owner\": ${{ github.event.inputs.client_payload.owner }}, \"repo\": ${{ github.event.inputs.client_payload.repo }}, \"pullRequestNumber\": ${{ github.event.inputs.client_payload.pullRequestNumber }}, \"branch\": ${{ github.event.inputs.client_payload.branch }}, \"triggeredBy\": ${{ github.event.inputs.client_payload.triggeredBy }} }} ] EOF 
         SECONDS=0
         docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
         echo "docker run took $SECONDS seconds"
-        curl -X POST "https://http-intake.logs.datadoghq.com/api/v2/logs" \ -H "Accept: application/json" \ -H "Content-Type: application/json" \ -H "DD-API-KEY: $ddApiKey" \ -d @- << EOF [ {\"hostname\": \"gitstream-github-action\", \"message\": \"docker run took $SECONDS seconds\", \"service\": \"gitstream-github-action\", \"env\": ${{ github.event.inputs.client_payload.env }}, \"level\": \"info\", \"data\": { \"owner\": ${{ github.event.inputs.client_payload.owner }}, \"repo\": ${{ github.event.inputs.client_payload.repo }}, \"pullRequestNumber\": ${{ github.event.inputs.client_payload.pullRequestNumber }}, \"branch\": ${{ github.event.inputs.client_payload.branch }}, \"triggeredBy\": ${{ github.event.inputs.client_payload.triggeredBy }} }} ] EOF 
       shell: bash
