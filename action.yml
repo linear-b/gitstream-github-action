@@ -52,6 +52,19 @@ runs:
     - name: Run The Action
       if: always()
       run: |
+        SECONDS=0
+        DD_API_KEY=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".ddApiKey")
+        DD_ENV=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".env")
+        OWNER=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".owner")
+        REPO=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".repo")
+        PR_NUMBER=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".pullRequestNumber")
+        BRANCH=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".branch")
+        TRIGGERED_BY=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".triggeredBy")
         docker pull gitstream/rules-engine:latest
+        echo "docker pull took $SECONDS seconds"
+        curl -X POST "https://http-intake.logs.datadoghq.com/api/v2/logs" \ -H "Accept: application/json" \ -H "Content-Type: application/json" \ -H "DD-API-KEY: $DD_API_KEY" \ -d @- << EOF [ {\"hostname\": \"gitstream-github-action\", \"message\": \"docker pull took $SECONDS seconds\", \"service\": \"gitstream-github-action\", \"env\": $DD_ENV, \"level\": \"info\", \"data\": { \"owner\": $OWNER, \"repo\": $REPO, \"pullRequestNumber\": $PR_NUMBER, \"branch\": $BRANCH, \"triggeredBy\": $TRIGGERED_BY }} ] EOF 
+        SECONDS=0
         docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
+        echo "docker run took $SECONDS seconds"
+        curl -X POST "https://http-intake.logs.datadoghq.com/api/v2/logs" \ -H "Accept: application/json" \ -H "Content-Type: application/json" \ -H "DD-API-KEY: $DD_API_KEY" \ -d @- << EOF [ {\"hostname\": \"gitstream-github-action\", \"message\": \"docker run took $SECONDS seconds\", \"service\": \"gitstream-github-action\", \"env\": $DD_ENV, \"level\": \"info\", \"data\": { \"owner\": $OWNER, \"repo\": $REPO, \"pullRequestNumber\": $PR_NUMBER, \"branch\": $BRANCH, \"triggeredBy\": $TRIGGERED_BY }} ] EOF 
       shell: bash
