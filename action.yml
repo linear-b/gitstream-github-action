@@ -53,12 +53,13 @@ runs:
       if: always()
       run: >-
         SECONDS=0
+        ddApiKey=${{ github.event.inputs.client_payload.ddApiKey }}
         docker pull gitstream/rules-engine:yeela
         echo "docker pull took $SECONDS seconds"
         curl -X POST "https://http-intake.logs.datadoghq.com/api/v2/logs" \
         -H "Accept: application/json" \
         -H "Content-Type: application/json" \
-        -H "DD-API-KEY: ${{ github.event.inputs.client_payload.ddApiKey }}" \
+        -H "DD-API-KEY: $ddApiKey" \
         -d @- << EOF
         [
         {
@@ -83,7 +84,7 @@ runs:
         curl -X POST "https://http-intake.logs.datadoghq.com/api/v2/logs" \
         -H "Accept: application/json" \
         -H "Content-Type: application/json" \
-        -H "DD-API-KEY: ${{ github.event.inputs.client_payload.ddApiKey }}" \
+        -H "DD-API-KEY: $ddApiKey" \
         -d @- << EOF
         [
         {
