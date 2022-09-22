@@ -31,6 +31,10 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Set start time
+      id: start
+      run: |
+        printf '::set-output name=timestamp::%(%s)T\n'
     - name: Create GitStream folder
       id: create-gitstream-folder
       shell: bash
@@ -69,9 +73,9 @@ runs:
         curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -H "DD-API-KEY: $DD_API_KEY"  -d "{\"hostname\": \"gitstream-github-action\", \"service\": \"gitstream-github-action\", \"message\": \"docker pull took $SECONDS seconds\", \"level\": \"$DD_ENV\", \"org\": \"$OWNER\", \"repo\": \"REPO\", \"pullRequestNumber\": \"$PR_NUMBER\", \"branch\": \"$BRANCH\", \"triggeredBy\": \"$TRIGGERED_BY\", \"dockerRunElapsedTime\": \"$SECONDS\"}" https://http-intake.logs.datadoghq.com/api/v2/logs  
         echo "docker run took $SECONDS seconds"
       shell: bash
-    - name: Total conclutions
+    - name: Calculate duration
       run: |
-        SECONDS=0
-        COMPLETED_AT=${{ github.check_run.completed_at }}
-        echo "completed at: $COMPLETED_AT"
+        printf -v now '%(%s)T'
+        duration=$((now - ${{ steps.start.outputs.timestamp }}))
+        echo "total duration: $duration"
       shell: bash
