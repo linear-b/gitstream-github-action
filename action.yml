@@ -72,11 +72,6 @@ runs:
         docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
         echo "docker run took $SECONDS seconds"
         curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -H "DD-API-KEY: $DD_API_KEY"  -d "{\"hostname\": \"gitstream-github-action\", \"service\": \"gitstream-github-action\", \"message\": \"docker run took $SECONDS seconds for $REPO\", \"level\": \"$DD_ENV\", \"org\": \"$OWNER\", \"repo\": \"$REPO\", \"pullRequestNumber\": \"$PR_NUMBER\", \"branch\": \"$BRANCH\", \"triggeredBy\": \"$TRIGGERED_BY\", \"dockerRunElapsedTime\": \"$SECONDS\"}" https://http-intake.logs.datadoghq.com/api/v2/logs  
-      shell: bash
-    - name: Calculate duration and status
-      run: |
-        DD_API_KEY=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".ddApiKey")
-        REPO=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".repo")
         printf -v now '%(%s)T'
         DURATION=$((now - ${{ steps.start.outputs.timestamp }}))
         echo "total duration for action: $DURATION seconds"
