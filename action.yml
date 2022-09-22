@@ -80,5 +80,5 @@ runs:
         printf -v now '%(%s)T'
         DURATION=$((now - ${{ steps.start.outputs.timestamp }}))
         echo "total duration for action: $DURATION seconds"
-        curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -H "DD-API-KEY: $DD_API_KEY"  -d "{\"hostname\": \"gitstream-github-action\", \"service\": \"gitstream-github-action\", \"message\": \"total GH action took $SECONDS seconds for $REPO with status \", \"level\": \"$DD_ENV\", \"org\": \"$OWNER\", \"repo\": \"$REPO\", \"pullRequestNumber\": \"$PR_NUMBER\", \"branch\": \"$BRANCH\", \"triggeredBy\": \"$TRIGGERED_BY\", \"totalElapsedTime\": \"$DURATION\"}" https://http-intake.logs.datadoghq.com/api/v2/logs  
+        curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -H "DD-API-KEY: $DD_API_KEY"  -d "{\"hostname\": \"gitstream-github-action\", \"service\": \"gitstream-github-action\", \"message\": \"total GH action took $DURATION seconds for $REPO with status \", \"level\": \"$DD_ENV\", \"org\": \"$OWNER\", \"repo\": \"$REPO\", \"pullRequestNumber\": \"$PR_NUMBER\", \"branch\": \"$BRANCH\", \"triggeredBy\": \"$TRIGGERED_BY\", \"totalElapsedTime\": \"$DURATION\"}" https://http-intake.logs.datadoghq.com/api/v2/logs  
       shell: bash
