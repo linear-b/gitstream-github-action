@@ -73,13 +73,12 @@ runs:
         echo "docker run took $SECONDS seconds"
         curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -H "DD-API-KEY: $DD_API_KEY"  -d "{\"hostname\": \"gitstream-github-action\", \"service\": \"gitstream-github-action\", \"message\": \"docker run took $SECONDS seconds for $REPO\", \"level\": \"$DD_ENV\", \"org\": \"$OWNER\", \"repo\": \"$REPO\", \"pullRequestNumber\": \"$PR_NUMBER\", \"branch\": \"$BRANCH\", \"triggeredBy\": \"$TRIGGERED_BY\", \"dockerRunElapsedTime\": \"$SECONDS\"}" https://http-intake.logs.datadoghq.com/api/v2/logs  
       shell: bash
-    - name: Calculate duration
+    - name: Calculate duration and status
       run: |
+        DD_API_KEY=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".ddApiKey")
+        REPO=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".repo")
         printf -v now '%(%s)T'
-        duration=$((now - ${{ steps.start.outputs.timestamp }}))
-        status=${{ github.event.state }}
-        status_description=${{ github.event.description }}
-        echo "total duration: $duration seconds"
-        echo "status $status desc: $status_description"
-        curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -H "DD-API-KEY: $DD_API_KEY"  -d "{\"hostname\": \"gitstream-github-action\", \"service\": \"gitstream-github-action\", \"message\": \"total GH action took $SECONDS seconds for $REPO with status $status\", \"level\": \"$DD_ENV\", \"org\": \"$OWNER\", \"repo\": \"$REPO\", \"pullRequestNumber\": \"$PR_NUMBER\", \"branch\": \"$BRANCH\", \"triggeredBy\": \"$TRIGGERED_BY\", \"totalElapsedTime\": \"$SECONDS\"}" https://http-intake.logs.datadoghq.com/api/v2/logs  
+        DURATION=$((now - ${{ steps.start.outputs.timestamp }}))
+        echo "total duration for action: $DURATION seconds"
+        curl -X POST -H "Accept: application/json" -H "Content-Type: application/json" -H "DD-API-KEY: $DD_API_KEY"  -d "{\"hostname\": \"gitstream-github-action\", \"service\": \"gitstream-github-action\", \"message\": \"total GH action took $SECONDS seconds for $REPO with status \", \"level\": \"$DD_ENV\", \"org\": \"$OWNER\", \"repo\": \"$REPO\", \"pullRequestNumber\": \"$PR_NUMBER\", \"branch\": \"$BRANCH\", \"triggeredBy\": \"$TRIGGERED_BY\", \"totalElapsedTime\": \"$DURATION\"}" https://http-intake.logs.datadoghq.com/api/v2/logs  
       shell: bash
