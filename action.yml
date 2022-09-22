@@ -52,7 +52,6 @@ runs:
     - name: Run The Action
       if: always()
       run: |
-        SECONDS=0
         DD_API_KEY=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".ddApiKey")
         DD_ENV=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".env")
         OWNER=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".owner")
@@ -60,6 +59,7 @@ runs:
         PR_NUMBER=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".pullRequestNumber")
         BRANCH=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".branch")
         TRIGGERED_BY=$(echo ${{ github.event.inputs.client_payload }} | jq -r ".triggeredBy")
+        SECONDS=0
         docker pull gitstream/rules-engine:latest
         echo "docker pull took $SECONDS seconds"
         curl -X POST "https://http-intake.logs.datadoghq.com/api/v2/logs" \
@@ -68,9 +68,9 @@ runs:
         -H "DD-API-KEY: $DD_API_KEY" \
         -d @- << EOF
         [
-        {
+          {
             "hostname": "gitstream-github-action",
-            "message": "docker pull took $SECONDS seconds",
+            "message": "docker pull took 0 seconds",
             "service": "gitstream-github-action",
             "env": "local",
             "level": "info",
@@ -78,8 +78,8 @@ runs:
             "repo": $REPO,
             "pullRequestNumber": $PR_NUMBER,
             "branch": $BRANCH,
-            "triggeredBy": $TRIGGERED_BY,
-        }
+            "triggeredBy": $TRIGGERED_BY
+          }
         ]
         EOF
         SECONDS=0
