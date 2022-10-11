@@ -47,10 +47,9 @@ runs:
         cd gitstream
         git checkout -b ${{ github.event.inputs.base_ref }}
         git branch --set-upstream-to=origin/${{ github.event.inputs.base_ref }} ${{ github.event.inputs.base_ref }}
-        git pull
+        git pull --all
         git checkout ${{ github.event.inputs.head_ref }}
-        git pull
-        git log
+        git pull --all
       shell: bash
     - name: Run The Action
       if: always()
