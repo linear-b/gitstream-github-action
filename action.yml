@@ -46,7 +46,7 @@ runs:
     - run: |
         cd gitstream
         git checkout -b ${{ github.event.inputs.base_ref }}
-        git branch --track origin/${{ github.event.inputs.base_ref }}
+        git branch --set-upstream-to=origin/${{ github.event.inputs.base_ref }} ${{ github.event.inputs.base_ref }}
         git pull
         git checkout ${{ github.event.inputs.head_ref }}
         git pull
