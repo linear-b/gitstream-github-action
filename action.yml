@@ -41,13 +41,13 @@ runs:
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
-        fetch-depth: 0
         path: 'gitstream/'
     - run: |
         cd gitstream
         git branch -r | grep -v '\->' | grep '${{ github.event.inputs.base_ref }}' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | while read remote; do git branch --track "${remote#origin/}" "$remote"; done        
         git fetch --all
         git pull --all
+        git log
       shell: bash
     - name: Run The Action
       if: always()
