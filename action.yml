@@ -41,15 +41,13 @@ runs:
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
-        fetch-depth: 0
         path: 'gitstream/'
     - run: |
         cd gitstream
-        git checkout -b ${{ github.event.inputs.base_ref }}
-        git branch --set-upstream-to=origin/${{ github.event.inputs.base_ref }} ${{ github.event.inputs.base_ref }}
-        git pull --all
+        git fetch --deepen=2147483647 origin ${{ github.event.inputs.base_ref }}
+        git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
         git checkout ${{ github.event.inputs.head_ref }}
-        git pull --all
+        git pull --deepen=2147483647 origin ${{ github.event.inputs.head_ref }}
       shell: bash
     - name: Run The Action
       if: always()
