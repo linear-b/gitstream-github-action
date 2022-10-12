@@ -45,11 +45,11 @@ runs:
         path: 'gitstream/'
     - run: |
         cd gitstream
-        git checkout -b ${{ github.event.inputs.base_ref }}
+        git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
         git branch --set-upstream-to=origin/${{ github.event.inputs.base_ref }} ${{ github.event.inputs.base_ref }}
-        git pull --all
+        git pull --unshallow
         git checkout ${{ github.event.inputs.head_ref }}
-        git pull --all
+        git pull --unshallow
       shell: bash
     - name: Run The Action
       if: always()
