@@ -44,11 +44,10 @@ runs:
         path: 'gitstream/'
     - run: |
         cd gitstream
-        git fetch origin ${{ github.event.inputs.base_ref }}
+        git fetch --deepen=2147483647 origin ${{ github.event.inputs.base_ref }}
         git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
-        git fetch --deepen=2147483647
         git checkout ${{ github.event.inputs.head_ref }}
-        git pull --deepen=2147483647
+        git pull --deepen=2147483647 origin ${{ github.event.inputs.head_ref }}
       shell: bash
     - name: Run The Action
       if: always()
