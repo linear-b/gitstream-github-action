@@ -44,8 +44,8 @@ runs:
         path: 'gitstream/'
     - run: |
         cd gitstream
-        echo $(git rev-list --count HEAD ^origin ${{ github.event.inputs.base_ref }})
-        git fetch --deepen=$(git rev-list --count HEAD ^origin ${{ github.event.inputs.base_ref }}) origin ${{ github.event.inputs.base_ref }}
+        echo $(git rev-list --count HEAD --remotes=origin/${{ github.event.inputs.base_ref }})
+        git fetch --deepen=$(git rev-list --count HEAD --remotes=origin/${{ github.event.inputs.base_ref }}) origin ${{ github.event.inputs.base_ref }}
         git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
         git checkout ${{ github.event.inputs.head_ref }}
         git pull --deepen=$(git rev-list --count HEAD ^origin ${{ github.event.inputs.base_ref }})
