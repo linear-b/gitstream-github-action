@@ -44,6 +44,7 @@ runs:
         path: 'gitstream/'
     - run: |
         cd gitstream
+        echo $(git rev-list --count HEAD ^${{ github.event.inputs.base_ref }})
         git fetch --depth=$(git rev-list --count HEAD ^${{ github.event.inputs.base_ref }}) origin ${{ github.event.inputs.base_ref }}
         git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
         git checkout ${{ github.event.inputs.head_ref }}
