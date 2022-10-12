@@ -41,14 +41,13 @@ runs:
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
-        fetch-depth: 0
         path: 'gitstream/'
     - run: |
         cd gitstream
         git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
-        git fetch --depth=2147483647
+        git fetch --deepen=2147483647
         git checkout ${{ github.event.inputs.head_ref }}
-        git pull --depth=2147483647
+        git pull --deepen=2147483647
       shell: bash
     - name: Run The Action
       if: always()
