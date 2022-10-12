@@ -44,10 +44,9 @@ runs:
         path: 'gitstream/'
     - run: |
         cd gitstream
-        git fetch --depth=1000 origin ${{ github.event.inputs.base_ref }}
+        git fetch --depth=1 origin ${{ github.event.inputs.base_ref }}
         git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
         git checkout ${{ github.event.inputs.head_ref }}
-        git pull --deepen=1000 origin ${{ github.event.inputs.head_ref }}
       shell: bash
     - name: Run The Action
       if: always()
