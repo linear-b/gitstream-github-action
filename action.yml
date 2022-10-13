@@ -44,9 +44,10 @@ runs:
         path: 'gitstream/'
     - run: |
         cd gitstream
-        git fetch --deepen=$(git rev-list --count HEAD --remotes=origin/${{ github.event.inputs.base_ref }}) origin ${{ github.event.inputs.base_ref }}
+        git fetch --deepen=$(git rev-list --count origin/${{ github.event.inputs.head_ref }} ^origin/${{ github.event.inputs.base_ref }}) origin ${{ github.event.inputs.base_ref }}
         git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
         git checkout ${{ github.event.inputs.head_ref }}
+        git fetch --deepen=$(git rev-list --count origin/${{ github.event.inputs.head_ref }} ^origin/${{ github.event.inputs.base_ref }})
       shell: bash
     - name: Run The Action
       if: always()
