@@ -34,7 +34,7 @@ runs:
     - name: Set start time
       id: start
       run: |
-        printf '::set-output name=timestamp::%(%s)T\n'
+        printf '::set-output name=timestamp::$((now))'
       shell: bash
     - name: Create GitStream folder
       id: create-gitstream-folder
