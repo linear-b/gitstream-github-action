@@ -69,9 +69,9 @@ runs:
         --data-raw '{
             "type": "runtimeMetric",
             "reporter": "gitstream-github-action",
-            "dockerPullDuration": $DOCKER_PULL_DURATION,
-            "dockerRunDuration": $DOCKER_RUN_DURATION,
-            "actionRunDuration": $ACTION_RUN_DURATION,
-            "client_payload": ${{ github.event.inputs.client_payload }}
+            "dockerPullDuration": \"$DOCKER_PULL_DURATION\",
+            "dockerRunDuration": \"$DOCKER_RUN_DURATION\",
+            "actionRunDuration": \"$ACTION_RUN_DURATION\",
+            "client_payload": \"${{ github.event.inputs.client_payload }}\"
         }'
       shell: bash
