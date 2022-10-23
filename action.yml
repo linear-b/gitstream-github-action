@@ -68,9 +68,9 @@ runs:
         --header 'Content-Type: application/json' \
         --data-raw '{"type": "runtimeMetric",
             "reporter": "gitstream-github-action",
-            "dockerPullDuration": 1,
-            "dockerRunDuration": 1,
-            "actionRunDuration":1,
-            "client_payload": ${{ github.event.inputs.client_payload }}
+            "dockerPullDuration": "'"$DOCKER_PULL_DURATION"'",
+            "dockerRunDuration": "'"$DOCKER_RUN_DURATION"'",
+            "actionRunDuration": "'"$ACTION_RUN_DURATION"'",
+            "client_payload": "'"${{ github.event.inputs.client_payload }}"'"
         }'
       shell: bash
