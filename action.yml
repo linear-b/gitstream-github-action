@@ -63,14 +63,12 @@ runs:
         SECONDS=0
         docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
         DOCKER_RUN_DURATION=$SECONDS
-        ACTION_RUN_DURATION=$((now - ${{ steps.start.outputs.timestamp }}))
         curl --location --request POST 'https://shaked.ngrok.io/analytics' \
         --header 'Content-Type: application/json' \
         --data-raw '{"type": "runtimeMetric",
             "reporter": "gitstream-github-action",
             "dockerPullDuration": "'"$DOCKER_PULL_DURATION"'",
             "dockerRunDuration": "'"$DOCKER_RUN_DURATION"'",
-            "actionRunDuration": "'"$ACTION_RUN_DURATION"'",
             "client_payload": ${{ github.event.inputs.client_payload }}
         }'
       shell: bash
