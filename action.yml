@@ -33,8 +33,7 @@ runs:
   steps:
     - name: Set start time
       id: start
-      run: |
-        echo '::set-output name=timestamp::$EPOCHSECONDS'
+      run: echo "timestamp="$EPOCHSECONDS" >> $GITHUB_OUTPUT
       shell: bash
     - name: Create GitStream folder
       id: create-gitstream-folder
