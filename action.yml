@@ -69,7 +69,7 @@ runs:
             "reporter": "gitstream-github-action",
             "dockerPullDuration": "'"$DOCKER_PULL_DURATION"'",
             "dockerRunDuration": "'"$DOCKER_RUN_DURATION"'",
-            "actionRuntime": "'"$(now - ${{ steps.vars.outputs.start-time }})"'"
+            "actionRuntime": "'"$(now - ${{ steps.vars.outputs.start-time }})"'",
             "client_payload": ${{ github.event.inputs.client_payload }}
         }'
       shell: bash
