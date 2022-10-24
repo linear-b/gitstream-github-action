@@ -23,10 +23,6 @@ inputs:
   resolver_token:
     description: 'Optional token for resolver'
     required: false
-  analytics_url:
-    description: 'Optional analytics url'
-    required: false
-    default: ''
   debug_mode:
     description: 'Run parser in debug mode'
     required: false
@@ -69,9 +65,8 @@ runs:
         echo "action-run-duration=$(($EPOCHSECONDS - ${{ steps.start.outputs.timestamp }}))" >> $GITHUB_OUTPUT
       shell: bash
     - name: Run post actions commands
-      if: ${{ github.event.inputs.analytics_url }}
       run: |
-        curl --location --request POST "'"${{ github.event.inputs.analytics_url }}"'" \
+        curl --location --request POST $(echo ${{ github.event.inputs.client_payload }} | jq -r ".analytics_url") \
           --header 'Content-Type: application/json' \
           --data-raw '{"type": "runtimeMetric",
               "reporter": "gitstream-github-action",
