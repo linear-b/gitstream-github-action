@@ -68,7 +68,7 @@ runs:
             "reporter": "gitstream-github-action",
             "dockerPullDuration": "'"$DOCKER_PULL_DURATION"'",
             "dockerRunDuration": "'"$DOCKER_RUN_DURATION"'",
-            "actionRuntime": "'"$(($EPOCHSECONDS - ${{ steps.start.outputs.timestamp }}))"'",
+            "actionRunDuration": "'"$(($EPOCHSECONDS - ${{ steps.start.outputs.timestamp }}))"'",
             "client_payload": ${{ github.event.inputs.client_payload }}
         }'
       shell: bash
