@@ -72,7 +72,7 @@ runs:
           --data-raw '{"type": "runtimeMetric",
               "reporter": "gitstream-github-action",
               "dockerPullDuration": "'"${{ steps.gitstream-action.outputs.docker-pull-duration }}"'",
-              "dockerRunDuration": "'"${{ steps.gitstream-action.outputs.docker-run-duration }}'",
+              "dockerRunDuration": "'"${{ steps.gitstream-action.outputs.docker-run-duration }}"'",
               "actionRunDuration": "'"${{ steps.gitstream-action.outputs.action-run-duration }}"'",
               "client_payload": ${{ github.event.inputs.client_payload }}
         }'
