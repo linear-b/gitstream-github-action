@@ -34,7 +34,7 @@ runs:
     - name: Set start time
       id: start
       run: |
-        echo ::set-output name=start-time::$(now)"
+        echo ::set-output name=start-time::$(now)
       shell: bash
     - name: Create GitStream folder
       id: create-gitstream-folder
