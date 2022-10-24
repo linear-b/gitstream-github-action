@@ -34,7 +34,7 @@ runs:
     - name: Set start time
       id: start
       run: |
-        printf '::set-output name=timestamp::$((now))'
+        echo ::set-output name=start-time::$(now)"
       shell: bash
     - name: Create GitStream folder
       id: create-gitstream-folder
@@ -69,6 +69,7 @@ runs:
             "reporter": "gitstream-github-action",
             "dockerPullDuration": "'"$DOCKER_PULL_DURATION"'",
             "dockerRunDuration": "'"$DOCKER_RUN_DURATION"'",
+            "actionRuntime": "'"$(now - ${{ steps.vars.outputs.start-time }})"'"
             "client_payload": ${{ github.event.inputs.client_payload }}
         }'
       shell: bash
