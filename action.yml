@@ -23,6 +23,10 @@ inputs:
   resolver_token:
     description: 'Optional token for resolver'
     required: false
+  analytics_url:
+    description: 'Optional analytics url'
+    required: false
+    default: ''
   debug_mode:
     description: 'Run parser in debug mode'
     required: false
@@ -58,17 +62,22 @@ runs:
       run: |
         SECONDS=0
         docker pull gitstream/rules-engine:latest
-        DOCKER_PULL_DURATION=$SECONDS
+        echo "docker-pull-duration=$SECONDS" >> $GITHUB_OUTPUT
         SECONDS=0
         docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
-        DOCKER_RUN_DURATION=$SECONDS
-        curl --location --request POST 'https://shaked.ngrok.io/analytics' \
-        --header 'Content-Type: application/json' \
-        --data-raw '{"type": "runtimeMetric",
-            "reporter": "gitstream-github-action",
-            "dockerPullDuration": "'"$DOCKER_PULL_DURATION"'",
-            "dockerRunDuration": "'"$DOCKER_RUN_DURATION"'",
-            "actionRunDuration": "'"$(($EPOCHSECONDS - ${{ steps.start.outputs.timestamp }}))"'",
-            "client_payload": ${{ github.event.inputs.client_payload }}
+        echo "docker-run-duration=$SECONDS" >> $GITHUB_OUTPUT
+        echo "action-run-duration=$(($EPOCHSECONDS - ${{ steps.start.outputs.timestamp }}))" >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Run post actions commands
+      if: ${{ github.event.inputs.analytics_url }}
+      run: |
+        curl --location --request POST "'"${{ github.event.inputs.analytics_url }}"'" \
+          --header 'Content-Type: application/json' \
+          --data-raw '{"type": "runtimeMetric",
+              "reporter": "gitstream-github-action",
+              "dockerPullDuration": "'"${{ steps.start.outputs.docker-pull-duration }}"'",
+              "dockerRunDuration": "'"${{ steps.start.outputs.docker-run-duration }}'",
+              "actionRunDuration": "'"${{ steps.start.outputs.action-run-duration }}"'",
+              "client_payload": ${{ github.event.inputs.client_payload }}
         }'
       shell: bash
