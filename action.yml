@@ -41,7 +41,7 @@ runs:
       run: |
         mkdir gitstream
     - name: Checkout head branch
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
