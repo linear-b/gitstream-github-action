@@ -67,7 +67,8 @@ runs:
       shell: bash
     - name: Run post actions commands
       run: |
-        curl --location --request POST $(echo ${{ github.event.inputs.client_payload }} | jq -r ".analytics_url") \
+        {
+          curl --location --request POST $(echo ${{ github.event.inputs.client_payload }} | jq -r ".analytics_url") \
           --header 'Content-Type: application/json' \
           --data-raw '{"type": "runtimeMetric",
               "reporter": "gitstream-github-action",
@@ -75,5 +76,6 @@ runs:
               "dockerRunDuration": ${{ steps.gitstream-action.outputs.docker-run-duration }},
               "actionRunDuration": ${{ steps.gitstream-action.outputs.action-run-duration }},
               "client_payload": ${{ github.event.inputs.client_payload }}
-        }'
+          }'
+        } || {}
       shell: bash
