@@ -66,8 +66,8 @@ runs:
       uses: actions/checkout@v3
       if: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
       with:
-        repository: '${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/CM'
-        ref: 'main'
+        repository: '${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }} / ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}'
+        ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
         path: 'gitstream/cm/'
     - name: Run The Action
       id: gitstream-action
