@@ -1,5 +1,5 @@
-name: 'GitStream CMR'
-description: 'Public github action for GitStream continuous merge platform'
+name: 'gitStream repo agent'
+description: 'Public GitHub action for gitStream Continuous Merge'
 
 inputs:
   full_repository:
