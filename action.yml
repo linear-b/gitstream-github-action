@@ -48,20 +48,20 @@ runs:
         path: 'gitstream/'
     - run: |
         cd gitstream
-        git fetch --deepen=1000 origin ${{ github.event.inputs.base_ref }}
+        git fetch origin ${{ github.event.inputs.base_ref }}
         git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
         git checkout ${{ github.event.inputs.head_ref }}
-        git fetch --deepen=1000 origin ${{ github.event.inputs.head_ref }}
+        git fetch origin ${{ github.event.inputs.head_ref }}
       shell: bash
     - name: Run The Action
       id: gitstream-action
       if: always()
       run: |
         SECONDS=0
-        docker pull gitstream/rules-engine:latest
+        docker pull gitstream/rules-engine:yeelaTest
         echo "docker-pull-duration=$SECONDS" >> $GITHUB_OUTPUT
         SECONDS=0
-        docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
+        docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine:yeelaTest
         echo "docker-run-duration=$SECONDS" >> $GITHUB_OUTPUT
         echo "action-run-duration=$(($EPOCHSECONDS - ${{ steps.start.outputs.timestamp }}))" >> $GITHUB_OUTPUT
       shell: bash
