@@ -47,11 +47,12 @@ runs:
         ref: ${{ github.event.inputs.head_ref }}
         path: 'gitstream/'
     - run: |
+        all=2147483647
         cd gitstream
-        git fetch --depth=2147483647 origin ${{ github.event.inputs.base_ref }}
+        git fetch --deepen=$all origin ${{ github.event.inputs.base_ref }}
         git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
         git checkout ${{ github.event.inputs.head_ref }}
-        git fetch --depth=2147483647 origin ${{ github.event.inputs.head_ref }}
+        git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
     - name: Run The Action
       id: gitstream-action
