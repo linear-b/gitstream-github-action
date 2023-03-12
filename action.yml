@@ -50,12 +50,13 @@ runs:
         path: 'gitstream/repo/'
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken }}
     - run: |
+        all=2147483647
         cd gitstream
         cd repo
-        git fetch --deepen=1000 origin ${{ github.event.inputs.base_ref }}
+        git fetch --deepen=$all origin ${{ github.event.inputs.base_ref }}
         git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
         git checkout ${{ github.event.inputs.head_ref }}
-        git fetch --deepen=1000 origin ${{ github.event.inputs.head_ref }}
+        git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
     - name: Create cm folder
       id: create-cm-folder
