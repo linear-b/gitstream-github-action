@@ -48,7 +48,7 @@ runs:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
         path: 'gitstream/repo/'
-        token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken }} || ${{ github.token }}
+        token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken }} || ''
     - run: |
         all=2147483647
         cd gitstream
