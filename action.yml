@@ -40,20 +40,37 @@ runs:
       shell: bash
       run: |
         mkdir gitstream
+        cd gitstream
+        mkdir repo
     - name: Checkout head branch
       uses: actions/checkout@v3
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
-        path: 'gitstream/'
+        path: 'gitstream/repo/'
+        token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken }}
     - run: |
         all=2147483647
         cd gitstream
+        cd repo
         git fetch --deepen=$all origin ${{ github.event.inputs.base_ref }}
         git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
         git checkout ${{ github.event.inputs.head_ref }}
         git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
+    - name: Create cm folder
+      id: create-cm-folder
+      shell: bash
+      run: |
+        cd gitstream
+        mkdir cm
+    - name: Checkout cm repo
+      uses: actions/checkout@v3
+      if: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
+      with:
+        repository: '${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}'
+        ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
+        path: 'gitstream/cm/'
     - name: Run The Action
       id: gitstream-action
       if: always()
