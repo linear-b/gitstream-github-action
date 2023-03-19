@@ -46,7 +46,7 @@ runs:
       uses: actions/checkout@v3
       with:
         repository: ${{ inputs.full_repository }}
-        ref: ${{ github.event.inputs.head_ref }}
+        ref: '${{ github.event.inputs.head_ref }}'
         path: 'gitstream/repo/'
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
     - run: |
@@ -55,8 +55,8 @@ runs:
         cd repo
         git fetch --deepen=$all origin ${{ github.event.inputs.base_ref }}
         git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
-        git checkout ${{ github.event.inputs.head_ref }}
-        git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
+        git checkout '${{ github.event.inputs.head_ref }}'
+        git fetch --deepen=$all origin '${{ github.event.inputs.head_ref }}'
       shell: bash
     - name: Create cm folder
       id: create-cm-folder
