@@ -36,8 +36,8 @@ runs:
       uses: actions/cache@v3
       with:
         path: gitstream
-        key: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).repo }}-gitsream-run
-        restore-keys: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).repo }}-gitsream-run
+        key: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).repo }}-gitsream-cache
+        restore-keys: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).repo }}-gitsream-cache
         
     - name: Set start time
       id: start
