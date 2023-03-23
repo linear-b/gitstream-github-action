@@ -80,7 +80,7 @@ runs:
         cd repo
         git fetch origin ${{ github.event.inputs.base_ref }}
         git checkout ${{ github.event.inputs.head_ref }}
-        git fetch origin ${{ github.event.inputs.head_ref }}
+        git pull origin ${{ github.event.inputs.head_ref }}
       shell: bash
       if: ${{ steps.cache-gitstream.outputs.cache-hit == 'true' }}
       
