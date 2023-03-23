@@ -78,6 +78,7 @@ runs:
     - run: |
         cd gitstream
         cd repo
+        git remote add origin ${{ github.server_url + '/' + github.inputs.full_repository }}
         git fetch origin ${{ github.event.inputs.base_ref }}
         git checkout ${{ github.event.inputs.head_ref }}
         git stash
