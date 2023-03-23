@@ -42,6 +42,12 @@ runs:
         mkdir gitstream
         cd gitstream
         mkdir repo
+    - name: Cache gitstream folder
+      id: cache-gitstream
+      uses: actions/cache@v3
+      with:
+        path: gitstream
+        key: ${{ runner.os }}-gitsream
     - name: Checkout head branch
       uses: actions/checkout@v3
       with:
