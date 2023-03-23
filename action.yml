@@ -31,12 +31,19 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Cache gitstream folder
+      id: cache-gitstream
+      uses: actions/cache@v3
+      with:
+        path: gitstream
+        key: ${{ runner.os }}-gitsream
+        restore-keys: ${{ runner.os }}-gitsream
     - name: Set start time
       id: start
       run: echo "timestamp=$EPOCHSECONDS" >> $GITHUB_OUTPUT
       shell: bash
       ## this step will be skipped if cache exists
-    - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+    - if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
     - name: Create GitStream folder
       id: create-gitstream-folder
       shell: bash
@@ -45,7 +52,7 @@ runs:
         cd gitstream
         mkdir repo
       ## this step will be skipped if cache exists
-    - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+    - if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
     - name: Checkout head branch
       uses: actions/checkout@v3
       with:
@@ -63,7 +70,7 @@ runs:
         git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
       ## this step will be skipped if cache exists
-    - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+    - if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
     - name: Create cm folder
       id: create-cm-folder
       shell: bash
@@ -71,7 +78,7 @@ runs:
         cd gitstream
         mkdir cm
       ## this step will be skipped if cache exists
-    - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+    - if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
     - name: Checkout cm repo
       uses: actions/checkout@v3
       if: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
@@ -91,11 +98,3 @@ runs:
         echo "docker-run-duration=$SECONDS" >> $GITHUB_OUTPUT
         echo "action-run-duration=$(($EPOCHSECONDS - ${{ steps.start.outputs.timestamp }}))" >> $GITHUB_OUTPUT
       shell: bash
-      ## this step will be skipped if cache exists
-    - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
-    - name: Cache gitstream folder
-      id: cache-gitstream
-      uses: actions/cache@v3
-      with:
-        path: gitstream
-        key: ${{ runner.os }}-gitsream
