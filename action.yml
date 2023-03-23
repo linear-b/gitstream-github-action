@@ -53,7 +53,6 @@ runs:
         mkdir gitstream
         cd gitstream
         mkdir repo
-        
       ## this step will be skipped if cache exists
     - name: Checkout head branch
       if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
@@ -63,7 +62,6 @@ runs:
         ref: ${{ github.event.inputs.head_ref }}
         path: 'gitstream/repo/'
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
-        
     - run: |
           all=2147483647
           cd gitstream
@@ -74,7 +72,6 @@ runs:
           git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
       if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
-      
       ## this step will be skipped if cache exists
     - name: Create cm folder
       if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
@@ -83,7 +80,6 @@ runs:
       run: |
         cd gitstream
         mkdir cm
-        
       ## this step will be skipped if cache exists
     - name: Checkout cm repo
       if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
@@ -93,7 +89,6 @@ runs:
         repository: '${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
         path: 'gitstream/cm/'
-        
     - name: Run The Action
       id: gitstream-action
       if: always()
