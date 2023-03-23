@@ -73,6 +73,16 @@ runs:
         git checkout ${{ github.event.inputs.head_ref }}
         git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
+      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
+      
+    - run: |
+        cd gitstream
+        cd repo
+        git fetch origin ${{ github.event.inputs.base_ref }}
+        git checkout ${{ github.event.inputs.head_ref }}
+        git fetch origin ${{ github.event.inputs.head_ref }}
+      shell: bash
+      if: ${{ steps.cache-gitstream.outputs.cache-hit == 'true' }}
       
       ## this step will be skipped if cache exists
     - name: Create cm folder
