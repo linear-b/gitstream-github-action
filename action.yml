@@ -36,56 +36,64 @@ runs:
       uses: actions/cache@v3
       with:
         path: gitstream
-        key: ${{ runner.os }}-gitsream
-        restore-keys: ${{ runner.os }}-gitsream
+        key: gitsream-run
+        restore-keys: gitsream-run
+        
     - name: Set start time
       id: start
       run: echo "timestamp=$EPOCHSECONDS" >> $GITHUB_OUTPUT
       shell: bash
+      
       ## this step will be skipped if cache exists
-    - if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
     - name: Create GitStream folder
+      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       id: create-gitstream-folder
       shell: bash
       run: |
         mkdir gitstream
         cd gitstream
         mkdir repo
+        
       ## this step will be skipped if cache exists
-    - if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
     - name: Checkout head branch
+      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       uses: actions/checkout@v3
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
         path: 'gitstream/repo/'
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
+        
     - run: |
-        all=2147483647
-        cd gitstream
-        cd repo
-        git fetch --deepen=$all origin ${{ github.event.inputs.base_ref }}
-        git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
-        git checkout ${{ github.event.inputs.head_ref }}
-        git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
+          all=2147483647
+          cd gitstream
+          cd repo
+          git fetch --deepen=$all origin ${{ github.event.inputs.base_ref }}
+          git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
+          git checkout ${{ github.event.inputs.head_ref }}
+          git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
+      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
+      
       ## this step will be skipped if cache exists
-    - if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
     - name: Create cm folder
+      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       id: create-cm-folder
       shell: bash
       run: |
         cd gitstream
         mkdir cm
+        
       ## this step will be skipped if cache exists
-    - if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
     - name: Checkout cm repo
+      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       uses: actions/checkout@v3
       if: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
       with:
         repository: '${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
         path: 'gitstream/cm/'
+        
     - name: Run The Action
       id: gitstream-action
       if: always()
