@@ -42,12 +42,6 @@ runs:
         mkdir gitstream
         cd gitstream
         mkdir repo
-    - name: Cache gitstream folder
-      id: cache-gitstream
-      uses: actions/cache@v3
-      with:
-        path: gitstream
-        key: ${{ runner.os }}-gitsream
     - name: Checkout head branch
       uses: actions/checkout@v3
       with:
@@ -89,3 +83,9 @@ runs:
         echo "docker-run-duration=$SECONDS" >> $GITHUB_OUTPUT
         echo "action-run-duration=$(($EPOCHSECONDS - ${{ steps.start.outputs.timestamp }}))" >> $GITHUB_OUTPUT
       shell: bash
+    - name: Cache gitstream folder
+      id: cache-gitstream
+      uses: actions/cache@v3
+      with:
+        path: gitstream
+        key: ${{ runner.os }}-gitsream
