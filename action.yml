@@ -63,13 +63,13 @@ runs:
         path: 'gitstream/repo/'
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
     - run: |
-         all=2147483647
-         cd gitstream
-         cd repo
-         git fetch --deepen=$all origin ${{ github.event.inputs.base_ref }}
-         git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
-         git checkout ${{ github.event.inputs.head_ref }}
-         git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
+        all=2147483647
+        cd gitstream
+        cd repo
+        git fetch --deepen=$all origin ${{ github.event.inputs.base_ref }}
+        git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
+        git checkout ${{ github.event.inputs.head_ref }}
+        git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
       if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       ## this step will be skipped if cache exists
