@@ -38,12 +38,12 @@ runs:
         path: gitstream
         key: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).repo }}-gitsream-cache
         restore-keys: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).repo }}-gitsream-cache
-        
+
     - name: Set start time
       id: start
       run: echo "timestamp=$EPOCHSECONDS" >> $GITHUB_OUTPUT
       shell: bash
-      
+
     - name: Create GitStream folder
       ## this step will be skipped if cache exists
       if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
@@ -53,17 +53,18 @@ runs:
         mkdir gitstream
         cd gitstream
         mkdir repo
-        
+
     - name: Checkout head branch
       ## this step will be skipped if cache exists
       uses: actions/checkout@v3
+      # if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
         path: 'gitstream/repo/'
         clean: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
-    
+
     - run: |
         all=2147483647
         cd gitstream
@@ -74,7 +75,7 @@ runs:
         git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
       if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
-      
+
     - name: Create cm folder
       ## this step will be skipped if cache exists
       if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
@@ -83,7 +84,7 @@ runs:
       run: |
         cd gitstream
         mkdir cm
-     
+
     - name: Checkout cm repo
       uses: actions/checkout@v3
       ## this step will be skipped if cache exists AND has cm repo
@@ -92,7 +93,7 @@ runs:
         repository: '${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
         path: 'gitstream/cm/'
-    
+
     - name: Run The Action
       id: gitstream-action
       if: always()
