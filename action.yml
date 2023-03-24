@@ -56,12 +56,12 @@ runs:
         
     - name: Checkout head branch
       ## this step will be skipped if cache exists
-      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       uses: actions/checkout@v3
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
         path: 'gitstream/repo/'
+        clean: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
     
     - run: |
@@ -74,18 +74,6 @@ runs:
         git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
       if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
-      
-    - run: |
-        cd gitstream
-        cd repo
-        git remote add origin ${{ github.server_url + '/' + github.inputs.full_repository }}
-        git fetch origin ${{ github.event.inputs.base_ref }}
-        git checkout ${{ github.event.inputs.head_ref }}
-        git stash
-        git pull origin ${{ github.event.inputs.head_ref }}
-      shell: bash
-      ## this step will NOT run when cache exists
-      if: ${{ steps.cache-gitstream.outputs.cache-hit == 'true' }}
       
     - name: Create cm folder
       ## this step will be skipped if cache exists
