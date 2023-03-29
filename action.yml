@@ -35,42 +35,64 @@ runs:
       id: start
       run: echo "timestamp=$EPOCHSECONDS" >> $GITHUB_OUTPUT
       shell: bash
+
+    - name: Cache gitstream folder
+      id: cache-gitstream
+      uses: actions/cache@v3
+      with:
+        path: gitstream
+        key: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headSha }}-${{ fromJSON(fromJSON(github.event.inputs.client_payload)).repo }}-gitsream-cache
+
     - name: Create GitStream folder
+      ## this step will be skipped if cache exists
+      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       id: create-gitstream-folder
       shell: bash
       run: |
         mkdir gitstream
         cd gitstream
         mkdir repo
+        mkdir temp
+
     - name: Checkout head branch
+      ## this step will be skipped if cache exists
       uses: actions/checkout@v3
+      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       with:
         repository: ${{ inputs.full_repository }}
-        ref: '${{ github.event.inputs.head_ref }}'
+        ref: ${{ github.event.inputs.head_ref }}
         path: 'gitstream/repo/'
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
+
     - run: |
         all=2147483647
         cd gitstream
         cd repo
         git fetch --deepen=$all origin ${{ github.event.inputs.base_ref }}
         git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
-        git checkout '${{ github.event.inputs.head_ref }}'
-        git fetch --deepen=$all origin '${{ github.event.inputs.head_ref }}'
+        git checkout ${{ github.event.inputs.head_ref }}
+        git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
+      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
+
     - name: Create cm folder
+      ## this step will be skipped if cache exists
+      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       id: create-cm-folder
       shell: bash
       run: |
         cd gitstream
         mkdir cm
+
     - name: Checkout cm repo
       uses: actions/checkout@v3
-      if: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
+      ## this step will be skipped if cache exists AND has cm repo
+      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' && fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
       with:
         repository: '${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
         path: 'gitstream/cm/'
+
     - name: Run The Action
       id: gitstream-action
       if: always()
@@ -79,7 +101,7 @@ runs:
         docker pull gitstream/rules-engine:latest
         echo "docker-pull-duration=$SECONDS" >> $GITHUB_OUTPUT
         SECONDS=0
-        docker run -v $(pwd)/gitstream:/code -e HEAD_REF='${{ github.event.inputs.head_ref }}' -e BASE_REF='${{ github.event.inputs.base_ref }}' -e CLIENT_PAYLOAD='${{ github.event.inputs.client_payload }}' -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
+        docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
         echo "docker-run-duration=$SECONDS" >> $GITHUB_OUTPUT
         echo "action-run-duration=$(($EPOCHSECONDS - ${{ steps.start.outputs.timestamp }}))" >> $GITHUB_OUTPUT
       shell: bash
