@@ -41,7 +41,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: gitstream
-        key: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headSha }}-${{ fromJSON(fromJSON(github.event.inputs.client_payload)).repo }}-gitsream-cache
+        key: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).repo }}-gitsream-cache
 
     - name: Create GitStream folder
       ## this step will be skipped if cache exists
@@ -74,6 +74,17 @@ runs:
         git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
       if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
+
+    - name: Configure Git
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
+      run: |
+        cd gitstream
+        cd repo
+        git stash
+        gh pr checkout ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).pullRequestNumber }}
+      if: ${{ steps.cache-gitstream.outputs.cache-hit == 'true' }}
 
     - name: Create cm folder
       ## this step will be skipped if cache exists
