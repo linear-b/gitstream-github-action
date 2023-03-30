@@ -75,7 +75,7 @@ runs:
       shell: bash
       if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
 
-    - name: Update cache state
+    - name: Update repo cache state
       shell: bash
       env:
         GITHUB_TOKEN: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
@@ -87,6 +87,15 @@ runs:
         git checkout ${{ github.event.inputs.head_ref }}
         git add . && git stash && gh repo sync --force
       if: ${{ steps.cache-gitstream.outputs.cache-hit == 'true' }}
+
+    - name: Update cm cache state
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
+      run: |
+        cd gitstream && cd cm
+        git add . && git stash && gh repo sync --force
+      if: ${{ steps.cache-gitstream.outputs.cache-hit == 'true' && fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
 
     - name: Create cm folder
       ## this step will be skipped if cache exists
