@@ -1,6 +1,5 @@
 name: 'gitStream repo agent'
 description: 'Public GitHub action for gitStream Continuous Merge'
-
 inputs:
   full_repository:
     description: 'Path of full Repository'
@@ -27,7 +26,6 @@ inputs:
     description: 'Run parser in debug mode'
     required: false
     default: false
-
 runs:
   using: 'composite'
   steps:
@@ -51,18 +49,13 @@ runs:
         key: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).repo }}-${{ github.event.inputs.head_ref }}-gitsream-cache
 
     - name: Create GitStream folder
-      ## this step will be skipped if cache exists
-      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       id: create-gitstream-folder
       shell: bash
       run: |
         mkdir gitstream
         cd gitstream
         mkdir repo
-        mkdir temp
-
     - name: Checkout head branch
-      ## this step will be skipped if cache exists
       uses: actions/checkout@v3
       with:
         repository: ${{ inputs.full_repository }}
@@ -70,7 +63,6 @@ runs:
         path: 'gitstream/repo/'
         clean: false
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
-
     - run: |
         all=2147483647
         cd gitstream
@@ -80,16 +72,12 @@ runs:
         git checkout ${{ github.event.inputs.head_ref }}
         git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
-
     - name: Create cm folder
-      ## this step will be skipped if cache exists
-      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       id: create-cm-folder
       shell: bash
       run: |
         cd gitstream
         mkdir cm
-
     - name: Checkout cm repo
       uses: actions/checkout@v3
       ## this step will be skipped if cache exists AND has cm repo
