@@ -36,6 +36,13 @@ runs:
       run: echo "timestamp=$EPOCHSECONDS" >> $GITHUB_OUTPUT
       shell: bash
 
+    - name: Cache Docker image
+      id: cache-docker
+      uses: actions/cache@v3
+      with:
+        path: rule-engine
+        key: rule-engine
+
     - name: Cache gitstream folder
       id: cache-gitstream
       uses: actions/cache@v3
@@ -57,11 +64,11 @@ runs:
     - name: Checkout head branch
       ## this step will be skipped if cache exists
       uses: actions/checkout@v3
-      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
         path: 'gitstream/repo/'
+        clean: false
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
 
     - run: |
@@ -73,37 +80,6 @@ runs:
         git checkout ${{ github.event.inputs.head_ref }}
         git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
-      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
-
-    - name: Update repo cache state
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
-      run: |
-        cd gitstream && cd repo
-        git reset HEAD --hard && git clean -f -d
-        git checkout ${{ github.event.inputs.base_ref }}
-        git status
-        git reset HEAD --hard && git clean -f -d
-        gh repo sync --force
-        git status
-        git log
-        git checkout ${{ github.event.inputs.head_ref }}
-        git status
-        git reset HEAD --hard && git clean -f -d
-        gh repo sync --force
-        git status
-
-      if: ${{ steps.cache-gitstream.outputs.cache-hit == 'true' }}
-
-    - name: Update cm cache state
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
-      run: |
-        cd gitstream && cd cm
-        git add . && git stash && gh repo sync --force
-      if: ${{ steps.cache-gitstream.outputs.cache-hit == 'true' && fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
 
     - name: Create cm folder
       ## this step will be skipped if cache exists
@@ -117,21 +93,42 @@ runs:
     - name: Checkout cm repo
       uses: actions/checkout@v3
       ## this step will be skipped if cache exists AND has cm repo
-      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' && fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
+      if: ${{ fromJSON(github.event.inputs.client_payload).hasCmRepo == true }}
       with:
         repository: '${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
         path: 'gitstream/cm/'
+        clean: false
+
+    - name: Load cache docker
+      id: load-docker
+      if: ${{ steps.cache-docker.outputs.cache-hit == 'true' }}
+      shell: bash
+      run: |
+        docker load -i rule-engine/rules-engine.tar
+
+    - name: Pull Rule engine
+      id: pull-rule-engine
+      shell: bash
+      if: ${{ steps.cache-docker.outputs.cache-hit != 'true' }}
+      run: |
+        SECONDS=0
+        docker pull gitstream/rules-engine:latest
+        echo "docker-pull-duration=$SECONDS" >> $GITHUB_OUTPUT
 
     - name: Run The Action
       id: gitstream-action
       if: always()
       run: |
         SECONDS=0
-        docker pull gitstream/rules-engine:latest
-        echo "docker-pull-duration=$SECONDS" >> $GITHUB_OUTPUT
-        SECONDS=0
         docker run -v $(pwd)/gitstream:/code -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
         echo "docker-run-duration=$SECONDS" >> $GITHUB_OUTPUT
         echo "action-run-duration=$(($EPOCHSECONDS - ${{ steps.start.outputs.timestamp }}))" >> $GITHUB_OUTPUT
       shell: bash
+
+    - name: save-docker
+      if: ${{ steps.cache-docker.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: |
+        mkdir rule-engine
+        docker save gitstream/rules-engine:latest -o rule-engine/rules-engine.tar
