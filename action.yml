@@ -83,11 +83,17 @@ runs:
         cd gitstream && cd repo
         git reset HEAD --hard && git clean -f -d
         git checkout ${{ github.event.inputs.base_ref }}
+        git status
         git reset HEAD --hard && git clean -f -d
         gh repo sync --force
+        git status
+        git log
         git checkout ${{ github.event.inputs.head_ref }}
+        git status
         git reset HEAD --hard && git clean -f -d
         gh repo sync --force
+        git status
+
       if: ${{ steps.cache-gitstream.outputs.cache-hit == 'true' }}
 
     - name: Update cm cache state
