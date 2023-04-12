@@ -81,11 +81,11 @@ runs:
         GITHUB_TOKEN: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
       run: |
         cd gitstream && cd repo
-        git add . && git stash
+        git reset HEAD --hard -x
         git checkout ${{ github.event.inputs.base_ref }}
-        git add . && git stash && gh repo sync --force
+        git reset HEAD --hard -x && gh repo sync --force
         git checkout ${{ github.event.inputs.head_ref }}
-        git add . && git stash && gh repo sync --force
+        git reset HEAD --hard -x && gh repo sync --force
       if: ${{ steps.cache-gitstream.outputs.cache-hit == 'true' }}
 
     - name: Update cm cache state
