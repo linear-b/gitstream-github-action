@@ -1,6 +1,5 @@
 name: 'gitStream repo agent'
 description: 'Public GitHub action for gitStream Continuous Merge'
-
 inputs:
   full_repository:
     description: 'Path of full Repository'
@@ -27,7 +26,6 @@ inputs:
     description: 'Run parser in debug mode'
     required: false
     default: false
-
 runs:
   using: 'composite'
   steps:
@@ -35,35 +33,20 @@ runs:
       id: start
       run: echo "timestamp=$EPOCHSECONDS" >> $GITHUB_OUTPUT
       shell: bash
-
-    - name: Cache gitstream folder
-      id: cache-gitstream
-      uses: actions/cache@v3
-      with:
-        path: gitstream
-        key: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).repo }}-${{ github.event.inputs.head_ref }}-gitsream-cache
-
     - name: Create GitStream folder
-      ## this step will be skipped if cache exists
-      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       id: create-gitstream-folder
       shell: bash
       run: |
         mkdir gitstream
         cd gitstream
         mkdir repo
-        mkdir temp
-
     - name: Checkout head branch
-      ## this step will be skipped if cache exists
       uses: actions/checkout@v3
-      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.head_ref }}
         path: 'gitstream/repo/'
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
-
     - run: |
         all=2147483647
         cd gitstream
@@ -73,48 +56,19 @@ runs:
         git checkout ${{ github.event.inputs.head_ref }}
         git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
       shell: bash
-      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
-
-    - name: Update repo cache state
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
-      run: |
-        cd gitstream && cd repo
-        git add . && git stash
-        git checkout ${{ github.event.inputs.base_ref }}
-        git add . && git stash && gh repo sync --force
-        git checkout ${{ github.event.inputs.head_ref }}
-        git add . && git stash && gh repo sync --force
-      if: ${{ steps.cache-gitstream.outputs.cache-hit == 'true' }}
-
-    - name: Update cm cache state
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
-      run: |
-        cd gitstream && cd cm
-        git add . && git stash && gh repo sync --force
-      if: ${{ steps.cache-gitstream.outputs.cache-hit == 'true' && fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
-
     - name: Create cm folder
-      ## this step will be skipped if cache exists
-      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' }}
       id: create-cm-folder
       shell: bash
       run: |
         cd gitstream
         mkdir cm
-
     - name: Checkout cm repo
       uses: actions/checkout@v3
-      ## this step will be skipped if cache exists AND has cm repo
-      if: ${{ steps.cache-gitstream.outputs.cache-hit != 'true' && fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
+      if: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
       with:
         repository: '${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
         path: 'gitstream/cm/'
-
     - name: Run The Action
       id: gitstream-action
       if: always()
