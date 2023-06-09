@@ -79,6 +79,34 @@ runs:
         repository: '${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
         path: 'gitstream/cm/'
+    - name: Replace secrets in files
+      shell: bash
+      run: |
+        # Set the folder path to iterate over
+        folder_path="gitstream/repo/.cm"
+
+        # Iterate over each file in the folder
+        for file in "$folder_path"/*; do
+          # Read the file content
+          file_content=$(cat "$file")
+
+          # Iterate over each environment variable
+          while IFS='=' read -r name value; do
+            # Get the environment variable name without the "env." prefix
+            env_name="${name#env.}"
+
+            # Escape the delimiter in the value
+            escaped_value=$(sed 's/[\/&]/\\&/g' <<< "$value")
+
+            # Replace the placeholder with the environment variable value in the file content
+            file_content=$(sed "s#env\.${env_name}#${escaped_value}#g" <<< "$file_content")
+            file_content=$(sed "s#${env_name}#${escaped_value}#g" <<< "$file_content")
+          done < <(env)
+
+          # Write the modified file content back to the file
+          echo "$file_content"
+          echo "$file_content" > "$file"
+        done
     - name: Run The Action
       id: gitstream-action
       if: always()
