@@ -79,43 +79,21 @@ runs:
         repository: '${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
         path: 'gitstream/cm/'
-    - name: Replace secrets in files
-      shell: bash
-      run: |
-        # Set the folder path to iterate over
-        folder_path="gitstream/repo/.cm"
-
-        # Iterate over each file in the folder
-        for file in "$folder_path"/*; do
-          # Read the file content
-          file_content=$(cat "$file")
-
-          # Iterate over each environment variable
-          while IFS='=' read -r name value; do
-            # Get the environment variable name without the "env." prefix
-            env_name="${name#env.}"
-
-            # Escape the delimiter in the value
-            escaped_value=$(sed 's/[\/&]/\\&/g' <<< "$value")
-
-            # Replace the placeholder with the environment variable value in the file content
-            file_content=$(sed "s#env\.${env_name}#${escaped_value}#g" <<< "$file_content")
-            file_content=$(sed "s#${env_name}#${escaped_value}#g" <<< "$file_content")
-          done < <(env)
-
-          # Write the modified file content back to the file
-          echo "$file_content"
-          echo "$file_content" > "$file"
-        done
     - name: Run The Action
       id: gitstream-action
       if: always()
       run: |
         SECONDS=0
+        env_file=env.user
+        touch $env_file
+        for var in $(env | cut -d "=" -f 1); do
+          value="${!var}"
+          echo "$var=$value" >> "$env_file"
+        done
         docker pull gitstream/rules-engine:latest
         echo "docker-pull-duration=$SECONDS" >> $GITHUB_OUTPUT
         SECONDS=0
-        docker run -v $(pwd)/gitstream:/code -e USE_CACHE=${{ steps.cache-gitstream-results.outputs.cache-hit }} -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
+        docker run --env-file $env_file -v $(pwd)/gitstream:/code -e USE_CACHE=${{ steps.cache-gitstream-results.outputs.cache-hit }} -e HEAD_REF=${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
         echo "docker-run-duration=$SECONDS" >> $GITHUB_OUTPUT
         echo "action-run-duration=$(($EPOCHSECONDS - ${{ steps.start.outputs.timestamp }}))" >> $GITHUB_OUTPUT
       shell: bash
