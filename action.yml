@@ -46,7 +46,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: gitstream/cache.json
-        key: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headSha }}-gitsream-cache
+        key: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headSha }}-gitstream-cache
 
     - name: Checkout head branch
       uses: actions/checkout@v3
