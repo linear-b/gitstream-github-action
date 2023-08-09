@@ -46,14 +46,14 @@ runs:
       uses: actions/cache@v3
       with:
         path: gitstream/cache.json
-        key: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headSha }}-gitsream-cache
+        key: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headSha }}-gitstream-cache
 
-    - name: Checkout head branch
+    - name: Checkout base branch
       uses: actions/checkout@v3
       if: ${{ steps.cache-gitstream-results.outputs.cache-hit != 'true' }}
       with:
         repository: ${{ inputs.full_repository }}
-        ref: ${{ github.event.inputs.head_ref }}
+        ref: ${{ github.event.inputs.base_ref }}
         path: 'gitstream/repo/'
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
     - if: ${{ steps.cache-gitstream-results.outputs.cache-hit != 'true' }}
@@ -62,9 +62,9 @@ runs:
         cd gitstream
         cd repo
         git fetch --deepen=$all origin ${{ github.event.inputs.base_ref }}
-        git checkout -b ${{ github.event.inputs.base_ref }} origin/${{ github.event.inputs.base_ref }}
-        git checkout ${{ github.event.inputs.head_ref }}
-        git fetch --deepen=$all origin ${{ github.event.inputs.head_ref }}
+        git remote add upstream ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headHttpUrl || fromJSON(fromJSON(github.event.inputs.client_payload)).repoUrl }}
+        git fetch --deepen=$all upstream ${{ github.event.inputs.head_ref }}
+        git checkout -b ${{ github.event.inputs.head_ref }} upstream/${{ github.event.inputs.head_ref }}
       shell: bash
     - name: Create cm folder
       id: create-cm-folder
