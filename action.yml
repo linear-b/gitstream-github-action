@@ -63,8 +63,8 @@ runs:
         cd repo
         git fetch --deepen=$all origin ${{ github.event.inputs.base_ref }}
         git remote add upstream ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headHttpUrl || fromJSON(fromJSON(github.event.inputs.client_payload)).repoUrl }}
-        git checkout -b upstream/${{ github.event.inputs.head_ref }}
         git fetch --deepen=$all upstream ${{ github.event.inputs.head_ref }}
+        git checkout -b upstream/${{ github.event.inputs.head_ref }} upstream/${{ github.event.inputs.head_ref }}
       shell: bash
     - name: Create cm folder
       id: create-cm-folder
