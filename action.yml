@@ -74,17 +74,11 @@ runs:
           core.setOutput('base_ref', base_ref);
           core.setOutput('head_ref', head_ref);
           core.setOutput('url', url);
-          core.info(`base_ref ${base_ref}`)
-          core.info(`head_ref ${head_ref}`)
-          core.info(`url ${url}`)
     - if: ${{ steps.cache-gitstream-results.outputs.cache-hit != 'true' }}
       run: |
         all=2147483647
         cd gitstream
         cd repo
-        echo "bash_ref ${{ steps.escape-quotes.outputs.base_ref }}"
-        echo "head_ref ${{ steps.escape-quotes.outputs.head_ref}}"
-        echo "url ${{ steps.escape-quotes.outputs.url }}"
         git fetch --deepen=$all origin $'${{ steps.escape-quotes.outputs.base_ref }}'
         git remote add upstream $'${{ steps.escape-quotes.outputs.url }}'
         git fetch --deepen=$all upstream $'${{ steps.escape-quotes.outputs.head_ref }}'
