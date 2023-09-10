@@ -56,16 +56,35 @@ runs:
         ref: ${{ github.event.inputs.base_ref }}
         path: 'gitstream/repo/'
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
+
+    - name: Escape single quotes
+      id: escape-quotes
+      uses: actions/github-script@v3
+      with:
+        base_ref_arg: ${{ github.event.inputs.base_ref }}
+        head_ref_arg: ${{ github.event.inputs.head_ref }}
+        url_arg: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headHttpUrl || fromJSON(fromJSON(github.event.inputs.client_payload)).repoUrl }}
+        script: |
+          function escapeSingleQuoteChars(input) {
+            return (input || '').replace(/'/g, "\\'");
+          };
+          const base_ref = escapeSingleQuoteChars(core.getInput('base_ref_arg'));
+          const head_ref = escapeSingleQuoteChars(core.getInput('head_ref_arg'));
+          const url = escapeSingleQuoteChars(core.getInput('url_arg'));
+          core.setOutput('base_ref', base_ref);
+          core.setOutput('head_ref', head_ref);
+          core.setOutput('url', url);
     - if: ${{ steps.cache-gitstream-results.outputs.cache-hit != 'true' }}
       run: |
         all=2147483647
         cd gitstream
         cd repo
-        git fetch --deepen=$all origin ${{ github.event.inputs.base_ref }}
-        git remote add upstream ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headHttpUrl || fromJSON(fromJSON(github.event.inputs.client_payload)).repoUrl }}
-        git fetch --deepen=$all upstream ${{ github.event.inputs.head_ref }}
-        git checkout -b upstream/${{ github.event.inputs.head_ref }} upstream/${{ github.event.inputs.head_ref }}
+        git fetch --deepen=$all origin $'${{ steps.escape-quotes.outputs.base_ref }}'
+        git remote add upstream $'${{ steps.escape-quotes.outputs.url }}'
+        git fetch --deepen=$all upstream $'${{ steps.escape-quotes.outputs.head_ref }}'
+        git checkout -b $'upstream/${{ steps.escape-quotes.outputs.head_ref}}' $'upstream/${{ steps.escape-quotes.outputs.head_ref}}'
       shell: bash
+
     - name: Create cm folder
       id: create-cm-folder
       shell: bash
@@ -93,7 +112,7 @@ runs:
         docker pull gitstream/rules-engine:latest
         echo "docker-pull-duration=$SECONDS" >> $GITHUB_OUTPUT
         SECONDS=0
-        docker run --env-file $env_file -v $(pwd)/gitstream:/code -e USE_CACHE=${{ steps.cache-gitstream-results.outputs.cache-hit }} -e HEAD_REF=upstream/${{ github.event.inputs.head_ref }} -e BASE_REF=${{ github.event.inputs.base_ref }} -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
+        docker run --env-file $env_file -v $(pwd)/gitstream:/code -e USE_CACHE=${{ steps.cache-gitstream-results.outputs.cache-hit }} -e HEAD_REF=$'upstream/${{ steps.escape-quotes.outputs.head_ref }}' -e BASE_REF=$'${{ steps.escape-quotes.outputs.base_ref }}' -e CLIENT_PAYLOAD=${{ github.event.inputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
         echo "docker-run-duration=$SECONDS" >> $GITHUB_OUTPUT
         echo "action-run-duration=$(($EPOCHSECONDS - ${{ steps.start.outputs.timestamp }}))" >> $GITHUB_OUTPUT
       shell: bash
