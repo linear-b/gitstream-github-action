@@ -57,8 +57,12 @@ runs:
         path: 'gitstream/repo/'
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
 
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        ref: 'LINBEE-2919'
+
     - name: Escape single quotes
-      uses: actions/checkout@v2
       uses: ./actions/safe-strings
       with:
         BASE_REF_ARG: ${{ github.event.inputs.base_ref }}
