@@ -57,6 +57,9 @@ runs:
         path: 'gitstream/repo/'
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
 
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
     - name: Escape single quotes
       uses: ./actions/safe-strings
       with:
