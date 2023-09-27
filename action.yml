@@ -60,28 +60,36 @@ runs:
     - name: Escape single quotes
       id: safe-strings
       uses: actions/github-script@v3
+      env:
+        BASE_REF_ARG: ${{ github.event.inputs.base_ref }}
+        HEAD_REF_ARG: ${{ github.event.inputs.head_ref }}
+        PAYLOAD_ARG: ${{ github.event.inputs.client_payload }}
+        URL_ARG: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headHttpUrl || fromJSON(fromJSON(github.event.inputs.client_payload)).repoUrl }}
       with:
-        base_ref_arg: ${{ github.event.inputs.base_ref }}
-        head_ref_arg: ${{ github.event.inputs.head_ref }}
-        payload_arg: ${{ github.event.inputs.client_payload }}
-        url_arg: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headHttpUrl || fromJSON(fromJSON(github.event.inputs.client_payload)).repoUrl }}
         script: |
-          function convertToSafeString(input) {
-            return (input || '').replace(/['`]/g, "\\$&");
-          };
+          try {
+            function convertToSafeString(input) {
+              return (input || '').replace(/['`]/g, "\\$&");
+            };
 
-          function escapeApostrophe(input) {
-            return (input || '').replace(/'/g, "\\'");
-          };
+            function escapeApostrophe(input) {
+              return (input || '').replace(/'/g, "\\'");
+            };
 
-          const base_ref = escapeApostrophe(core.getInput('base_ref_arg'));
-          const head_ref = escapeApostrophe(core.getInput('head_ref_arg'));
-          const url = convertToSafeString(core.getInput('url_arg'));
-          const client_payload = convertToSafeString(core.getInput('payload_arg'));
-          core.setOutput('base_ref', base_ref);
-          core.setOutput('head_ref', head_ref);
-          core.setOutput('url', url);
-          core.setOutput('client_payload', client_payload);
+            const base_ref = escapeApostrophe(process.env.BASE_REF_ARG);
+            const head_ref = escapeApostrophe(process.env.HEAD_REF_ARG);
+            const url = convertToSafeString(process.env.URL_ARG);
+            const client_payload = convertToSafeString(process.env.PAYLOAD_ARG);
+
+            core.setOutput('base_ref', base_ref);
+            core.setOutput('head_ref', head_ref);
+            core.setOutput('url', url);
+            core.setOutput('client_payload', client_payload);
+          } catch (err) {
+            core.error(`Failed producing safe string: ${err}`);
+            process.exit(1);
+          }
+
     - if: ${{ steps.cache-gitstream-results.outputs.cache-hit != 'true' }}
       run: |
         all=2147483647
@@ -117,10 +125,10 @@ runs:
           value="${!var}"
           echo "$var=$value" >> "$env_file"
         done
-        docker pull gitstream/rules-engine:latest
+        docker pull gitstream/rules-engine:yeelaTest
         echo "docker-pull-duration=$SECONDS" >> $GITHUB_OUTPUT
         SECONDS=0
-        docker run --env-file $env_file -v $(pwd)/gitstream:/code -e USE_CACHE=${{ steps.cache-gitstream-results.outputs.cache-hit }} -e HEAD_REF=$'upstream/${{ steps.safe-strings.outputs.head_ref }}' -e BASE_REF=$'${{ steps.safe-strings.outputs.base_ref }}' -e CLIENT_PAYLOAD=${{ steps.safe-strings.outputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
+        docker run --env-file $env_file -v $(pwd)/gitstream:/code -e USE_CACHE=${{ steps.cache-gitstream-results.outputs.cache-hit }} -e HEAD_REF=$'upstream/${{ steps.safe-strings.outputs.head_ref }}' -e BASE_REF=$'${{ steps.safe-strings.outputs.base_ref }}' -e CLIENT_PAYLOAD=${{ steps.safe-strings.outputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine:yeelaTest
         echo "docker-run-duration=$SECONDS" >> $GITHUB_OUTPUT
         echo "action-run-duration=$(($EPOCHSECONDS - ${{ steps.start.outputs.timestamp }}))" >> $GITHUB_OUTPUT
       shell: bash
