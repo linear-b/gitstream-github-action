@@ -58,7 +58,7 @@ runs:
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
 
     - name: Escape single quotes
-      uses: ./.github/workflows/escape_quotes_action.yml
+      uses: ./actions/safe-strings
       with:
         BASE_REF_ARG: ${{ github.event.inputs.base_ref }}
         HEAD_REF_ARG: ${{ github.event.inputs.head_ref }}
