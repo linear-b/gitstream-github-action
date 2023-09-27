@@ -13,38 +13,31 @@ inputs:
   URL_ARG:
     description: 'URL Argument'
     required: true
-
+outputs:
+  base_ref:
+    description: 'Escaped Base Ref'
+  head_ref:
+    description: 'Escaped Head Ref'
+  url:
+    description: 'Safe URL'
+  client_payload:
+    description: 'Safe Client Payload'
 runs:
   using: 'composite'
   steps:
-    - id: safe-strings
-      uses: actions/github-script@v3
-      env:
-        BASE_REF_ARG: ${{ inputs.BASE_REF_ARG }}
-        HEAD_REF_ARG: ${{ inputs.HEAD_REF_ARG }}
-        PAYLOAD_ARG: ${{ inputs.PAYLOAD_ARG }}
-        URL_ARG: ${{ inputs.URL_ARG }}
-      with:
-        script: |
-          try {
-            function convertToSafeString(input) {
-              return (input || '').replace(/['`]/g, "\\$&");
-            };
-
-            function escapeApostrophe(input) {
-              return (input || '').replace(/'/g, "\\'");
-            };
-
-            const base_ref = escapeApostrophe(process.env.BASE_REF_ARG);
-            const head_ref = escapeApostrophe(process.env.HEAD_REF_ARG);
-            const url = convertToSafeString(process.env.URL_ARG);
-            const client_payload = convertToSafeString(process.env.PAYLOAD_ARG);
-
-            core.setOutput('base_ref', base_ref);
-            core.setOutput('head_ref', head_ref);
-            core.setOutput('url', url);
-            core.setOutput('client_payload', client_payload);
-          } catch (err) {
-            core.error(`Failed producing safe string: ${err}`);
-            process.exit(1);
-          }
+    - run: |
+        function escapeApostrophe() {
+          echo "$1" | sed "s/'/'\\\\''/g"
+        }
+        function convertToSafeString() {
+          echo "$1" | sed 's/['\''`]/\\&/g'
+        }
+        echo "BASE_REF=$(escapeApostrophe "${{ inputs.BASE_REF_ARG }}")" >> $GITHUB_ENV
+        echo "HEAD_REF=$(escapeApostrophe "${{ inputs.HEAD_REF_ARG }}")" >> $GITHUB_ENV
+        echo "URL=$(convertToSafeString "${{ inputs.URL_ARG }}")" >> $GITHUB_ENV
+        echo "CLIENT_PAYLOAD=$(convertToSafeString "${{ inputs.PAYLOAD_ARG }}")" >> $GITHUB_ENV
+        echo "::set-output name=base_ref::$(escapeApostrophe "${{ inputs.BASE_REF_ARG }}")"
+        echo "::set-output name=head_ref::$(escapeApostrophe "${{ inputs.HEAD_REF_ARG }}")"
+        echo "::set-output name=url::$(convertToSafeString "${{ inputs.URL_ARG }}")"
+        echo "::set-output name=client_payload::$(convertToSafeString "${{ inputs.PAYLOAD_ARG }}")"
+      shell: bash
