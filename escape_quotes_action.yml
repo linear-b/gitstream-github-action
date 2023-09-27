@@ -1,0 +1,50 @@
+name: 'Escape Single Quotes'
+description: 'Escape single quotes in given strings'
+inputs:
+  BASE_REF_ARG:
+    description: 'Base Ref Argument'
+    required: true
+  HEAD_REF_ARG:
+    description: 'Head Ref Argument'
+    required: true
+  PAYLOAD_ARG:
+    description: 'Client Payload Argument'
+    required: true
+  URL_ARG:
+    description: 'URL Argument'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - id: safe-strings
+      uses: actions/github-script@v3
+      env:
+        BASE_REF_ARG: ${{ inputs.BASE_REF_ARG }}
+        HEAD_REF_ARG: ${{ inputs.HEAD_REF_ARG }}
+        PAYLOAD_ARG: ${{ inputs.PAYLOAD_ARG }}
+        URL_ARG: ${{ inputs.URL_ARG }}
+      with:
+        script: |
+          try {
+            function convertToSafeString(input) {
+              return (input || '').replace(/['`]/g, "\\$&");
+            };
+
+            function escapeApostrophe(input) {
+              return (input || '').replace(/'/g, "\\'");
+            };
+
+            const base_ref = escapeApostrophe(process.env.BASE_REF_ARG);
+            const head_ref = escapeApostrophe(process.env.HEAD_REF_ARG);
+            const url = convertToSafeString(process.env.URL_ARG);
+            const client_payload = convertToSafeString(process.env.PAYLOAD_ARG);
+
+            core.setOutput('base_ref', base_ref);
+            core.setOutput('head_ref', head_ref);
+            core.setOutput('url', url);
+            core.setOutput('client_payload', client_payload);
+          } catch (err) {
+            core.error(`Failed producing safe string: ${err}`);
+            process.exit(1);
+          }
