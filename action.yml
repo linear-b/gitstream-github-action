@@ -63,6 +63,7 @@ runs:
         ref: 'LINBEE-2919'
 
     - name: Escape single quotes
+      id: safe-strings
       uses: ./actions/safe-strings
       with:
         BASE_REF_ARG: ${{ github.event.inputs.base_ref }}
