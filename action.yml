@@ -99,6 +99,10 @@ runs:
       id: gitstream-action
       if: always()
       run: |
+        echo "Head ref: ${{ steps.safe-strings.outputs.head_ref }}"
+        echo "Base ref: ${{ steps.safe-strings.outputs.base_ref }}"
+        echo "url: ${{ steps.safe-strings.outputs.url }}"
+        echo "client_payload: ${{ steps.safe-strings.outputs.client_payload }}"
         SECONDS=0
         env_file=env.user
         touch $env_file
