@@ -40,14 +40,12 @@ runs:
         mkdir gitstream
         cd gitstream
         mkdir repo
-
     - name: Cache gitstream results
       id: cache-gitstream-results
       uses: actions/cache@v3
       with:
         path: gitstream/cache.json
         key: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headSha }}-gitstream-cache
-
     - name: Checkout base branch
       uses: actions/checkout@v3
       if: ${{ steps.cache-gitstream-results.outputs.cache-hit != 'true' }}
@@ -56,21 +54,35 @@ runs:
         ref: ${{ github.event.inputs.base_ref }}
         path: 'gitstream/repo/'
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
-
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        ref: 'LINBEE-2919'
-
     - name: Escape single quotes
       id: safe-strings
-      uses: ./actions/safe-strings
-      with:
+      uses: actions/github-script@v3
+      env:
         BASE_REF_ARG: ${{ github.event.inputs.base_ref }}
         HEAD_REF_ARG: ${{ github.event.inputs.head_ref }}
         PAYLOAD_ARG: ${{ github.event.inputs.client_payload }}
         URL_ARG: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headHttpUrl || fromJSON(fromJSON(github.event.inputs.client_payload)).repoUrl }}
-
+      with:
+        script: |
+          try {
+            function convertToSafeString(input) {
+              return (input || '').replace(/['`]/g, "\\$&");
+            };
+            function escapeApostrophe(input) {
+              return (input || '').replace(/'/g, "\\'");
+            };
+            const base_ref = escapeApostrophe(process.env.BASE_REF_ARG);
+            const head_ref = escapeApostrophe(process.env.HEAD_REF_ARG);
+            const url = convertToSafeString(process.env.URL_ARG);
+            const client_payload = convertToSafeString(process.env.PAYLOAD_ARG);
+            core.setOutput('base_ref', base_ref);
+            core.setOutput('head_ref', head_ref);
+            core.setOutput('url', url);
+            core.setOutput('client_payload', client_payload);
+          } catch (err) {
+            core.error(`Failed producing safe string: ${err}`);
+            process.exit(1);
+          }
     - if: ${{ steps.cache-gitstream-results.outputs.cache-hit != 'true' }}
       run: |
         all=2147483647
@@ -81,7 +93,6 @@ runs:
         git fetch --deepen=$all upstream $'${{ steps.safe-strings.outputs.head_ref }}'
         git checkout -b $'upstream/${{ steps.safe-strings.outputs.head_ref}}' $'upstream/${{ steps.safe-strings.outputs.head_ref}}'
       shell: bash
-
     - name: Create cm folder
       id: create-cm-folder
       shell: bash
@@ -99,10 +110,6 @@ runs:
       id: gitstream-action
       if: always()
       run: |
-        echo "Head ref: ${{ steps.safe-strings.outputs.head_ref }}"
-        echo "Base ref: ${{ steps.safe-strings.outputs.base_ref }}"
-        echo "url: ${{ steps.safe-strings.outputs.url }}"
-        echo "client_payload: ${{ steps.safe-strings.outputs.client_payload }}"
         SECONDS=0
         env_file=env.user
         touch $env_file
