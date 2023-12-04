@@ -33,6 +33,7 @@ runs:
       id: create-gitstream-folder
       shell: bash
       run: |
+        rm -rf gitstream
         mkdir gitstream
         cd gitstream
         mkdir repo
