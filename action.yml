@@ -107,5 +107,5 @@ runs:
           echo "$var=$value" >> "$env_file"
         done
         docker pull gitstream/rules-engine:latest
-        docker run --env-file $env_file -v $(pwd)/gitstream:/code -e HEAD_REF=$'upstream/${{ steps.safe-strings.outputs.head_ref }}' -e BASE_REF=$'${{ steps.safe-strings.outputs.base_ref }}' -e CLIENT_PAYLOAD=${{ steps.safe-strings.outputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
+        docker run --env-file $env_file -v $(pwd)/gitstream:/code -e HEAD_REF=$'upstream/${{ steps.safe-strings.outputs.head_ref }}' -e BASE_REF=$'${{ steps.safe-strings.outputs.base_ref }}' -e CLIENT_PAYLOAD=${{ steps.safe-strings.outputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} -u $(id -u):$(id -g) gitstream/rules-engine
       shell: bash
