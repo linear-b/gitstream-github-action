@@ -38,7 +38,7 @@ runs:
         cd gitstream
         mkdir repo
     - name: Checkout base branch
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.base_ref }}
@@ -46,7 +46,7 @@ runs:
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
     - name: Escape single quotes
       id: safe-strings
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       env:
         BASE_REF_ARG: ${{ github.event.inputs.base_ref }}
         HEAD_REF_ARG: ${{ github.event.inputs.head_ref }}
@@ -90,7 +90,7 @@ runs:
         cd gitstream
         mkdir cm
     - name: Checkout cm repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       if: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
       with:
         repository: "${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}"
