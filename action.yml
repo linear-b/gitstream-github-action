@@ -156,7 +156,11 @@ runs:
       shell: bash
 
     - name: Cleanup
-      if: ${{ always() }}
+      if: always()
       shell: bash
-      run: |
-        rm -rf gitstream
+      run: >-
+        docker run
+        --env-file $env_file
+        -v $(pwd)/gitstream:/code
+        --entrypoint ash
+        gitstream/rules-engine -c "rm -rf /code/* && chown 1000:1000 /code"
