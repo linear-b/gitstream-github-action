@@ -155,12 +155,7 @@ runs:
           -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine:latest
       shell: bash
 
-    - name: Cleanup
-      if: always()
-      shell: bash
-      run: >-
         docker run
-        --env-file $env_file
         -v $(pwd)/gitstream:/code
         --entrypoint ash
         gitstream/rules-engine -c "rm -rf /code/* && chown 1000:1000 /code"
