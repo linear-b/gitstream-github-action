@@ -49,6 +49,7 @@ runs:
       id: create-gitstream-folder
       shell: bash
       run: |
+        echo "misha1"
         rm -rf gitstream
         mkdir gitstream
         cd gitstream
