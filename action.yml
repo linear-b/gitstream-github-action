@@ -26,6 +26,10 @@ inputs:
     description: "Run parser in debug mode"
     required: false
     default: 'false'
+  pull_docker_from_cache:
+    description: "If should store gitstream docker in GitHub cache"
+    required: false
+    default: 'false'
 runs:
   using: "composite"
   steps:
@@ -102,6 +106,7 @@ runs:
         path: "gitstream/cm/"
 
     - name: Docker Layer Caching
+      if: github.event.inputs.pull_docker_from_cache == 'true'
       uses: satackey/action-docker-layer-caching@v0.0.11
       continue-on-error: true
 
