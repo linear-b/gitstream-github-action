@@ -35,13 +35,13 @@ runs:
   steps:
     - name: Check pull_docker_from_cache as boolean
       shell: bash
-      if: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).pull_docker_from_cache == true }}
+      if: ${{ fromJSON(github.event.inputs).pull_docker_from_cache == true }}
       run: |
         echo "Check pull_docker_from_cache as boolean"
         
     - name: Check pull_docker_from_cache as string
       shell: bash
-      if: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).pull_docker_from_cache == 'true' }}
+      if: ${{ fromJSON(github.event.inputs).pull_docker_from_cache == 'true' }}
       run: |
         echo "Check pull_docker_from_cache as string"
 
