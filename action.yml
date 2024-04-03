@@ -1,48 +1,48 @@
-name: 'gitStream repo agent'
-description: 'Public GitHub action for gitStream Continuous Merge'
+name: "gitStream repo agent"
+description: "Public GitHub action for gitStream Continuous Merge"
 inputs:
   full_repository:
-    description: 'Path of full Repository'
+    description: "Path of full Repository"
     required: true
   head_ref:
-    description: 'Head Branch Ref to checkout to'
+    description: "Head Branch Ref to checkout to"
     required: true
   base_ref:
-    description: 'Base Branch Ref to checkout to'
+    description: "Base Branch Ref to checkout to"
     required: true
   client_payload:
-    description: 'The client payload'
+    description: "The client payload"
     required: true
   installation_id:
-    description: 'The github app installation id'
+    description: "The github app installation id"
     required: false
   resolver_url:
-    description: 'Resolver url to send results to'
+    description: "Resolver url to send results to"
     required: true
   resolver_token:
-    description: 'Optional token for resolver'
+    description: "Optional token for resolver"
     required: false
   debug_mode:
-    description: 'Run parser in debug mode'
+    description: "Run parser in debug mode"
     required: false
     default: 'false'
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Create GitStream folder
+      id: create-gitstream-folder
       shell: bash
       run: |
         rm -rf gitstream
         mkdir gitstream
         cd gitstream
         mkdir repo
-
     - name: Checkout base branch
       uses: actions/checkout@v4
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.base_ref }}
-        path: 'gitstream/repo/'
+        path: "gitstream/repo/"
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
 
     - name: Escape single quotes
@@ -94,12 +94,20 @@ runs:
         mkdir cm
 
     - name: Checkout cm repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       if: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
       with:
-        repository: '${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}'
+        repository: "${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}"
         ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
-        path: 'gitstream/cm/'
+        path: "gitstream/cm/"
+
+    - name: Docker Layer Caching
+      uses: satackey/action-docker-layer-caching@v0.0.11
+      continue-on-error: true
+
+    - name: Pull gitstream Docker
+      shell: bash
+      run: docker pull gitstream/rules-engine:latest
 
     - name: Run The Action
       id: gitstream-action
@@ -111,6 +119,12 @@ runs:
           value="${!var}"
           echo "$var=$value" >> "$env_file"
         done
-        docker pull gitstream/rules-engine:mishaTest
-        docker run --env-file $env_file -v $(pwd)/gitstream:/code -e HEAD_REF=$'upstream/${{ steps.safe-strings.outputs.head_ref }}' -e BASE_REF=$'${{ steps.safe-strings.outputs.base_ref }}' -e CLIENT_PAYLOAD=${{ steps.safe-strings.outputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine:mishaTest
+        docker run --env-file $env_file -v $(pwd)/gitstream:/code \
+          -e HEAD_REF=$'upstream/${{ steps.safe-strings.outputs.head_ref }}' \
+          -e BASE_REF=$'${{ steps.safe-strings.outputs.base_ref }}' \
+          -e CLIENT_PAYLOAD=${{ steps.safe-strings.outputs.client_payload }} \
+          -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} \
+          -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} \
+          -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} \
+          gitstream/rules-engine:latest
       shell: bash
