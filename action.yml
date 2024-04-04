@@ -43,7 +43,7 @@ runs:
         mkdir repo
 
     - name: Checkout base branch
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.base_ref }}
