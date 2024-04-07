@@ -25,16 +25,11 @@ inputs:
   debug_mode:
     description: "Run parser in debug mode"
     required: false
-    default: "false"
-  pull_docker_from_cache:
-    description: "If should store gitstream docker in GitHub cache"
-    required: false
-    default: "false"
+    default: false
 runs:
   using: "composite"
   steps:
     - name: Create GitStream folder
-      id: create-gitstream-folder
       shell: bash
       run: |
         rm -rf gitstream
@@ -43,7 +38,7 @@ runs:
         mkdir repo
 
     - name: Checkout base branch
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.base_ref }}
@@ -52,7 +47,7 @@ runs:
 
     - name: Escape single quotes
       id: safe-strings
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       env:
         BASE_REF_ARG: ${{ github.event.inputs.base_ref }}
         HEAD_REF_ARG: ${{ github.event.inputs.head_ref }}
@@ -79,6 +74,7 @@ runs:
             core.error(`Failed producing safe string: ${err}`);
             process.exit(1);
           }
+
     - name: Checkout Pull Request branches history
       run: |
         all=2147483647
@@ -91,33 +87,20 @@ runs:
       shell: bash
 
     - name: Create cm folder
-      id: create-cm-folder
       shell: bash
       run: |
         cd gitstream
         mkdir cm
 
     - name: Checkout cm repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       if: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
       with:
         repository: "${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}"
         ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
         path: "gitstream/cm/"
 
-    - name: Docker Layer Caching
-      if: ${{ inputs.pull_docker_from_cache == 'true' }}
-      uses: satackey/action-docker-layer-caching@v0.0.11
-      continue-on-error: true
-      with:
-        concurrency: 12
-
-    - name: Pull gitstream Docker
-      shell: bash
-      run: docker pull gitstream/rules-engine:latest
-
     - name: Run The Action
-      id: gitstream-action
       if: always()
       run: |
         env_file=env.user
@@ -127,5 +110,12 @@ runs:
           echo "$var=$value" >> "$env_file"
         done
         docker pull gitstream/rules-engine:latest
-        docker run --env-file $env_file -v $(pwd)/gitstream:/code -e HEAD_REF=$'upstream/${{ steps.safe-strings.outputs.head_ref }}' -e BASE_REF=$'${{ steps.safe-strings.outputs.base_ref }}' -e CLIENT_PAYLOAD=${{ steps.safe-strings.outputs.client_payload }} -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine
+        docker run --env-file $env_file \
+          -v $(pwd)/gitstream:/code \
+          -e HEAD_REF=$'upstream/${{ steps.safe-strings.outputs.head_ref }}' \
+          -e BASE_REF=$'${{ steps.safe-strings.outputs.base_ref }}' \
+          -e CLIENT_PAYLOAD=${{ steps.safe-strings.outputs.client_payload }} \
+          -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} \
+          -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} \
+          -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine:latest
       shell: bash
