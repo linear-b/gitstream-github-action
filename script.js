@@ -1,7 +1,7 @@
 module.exports = core => {
   const { RUNNER_OS, UPDATE_TIMES_A_DAY } = process.env;
 
-  if (UPDATE_TIMES_A_DAY) {
+  if (!UPDATE_TIMES_A_DAY) {
     return;
   }
 
