@@ -27,7 +27,7 @@ inputs:
     required: false
     default: false
   update_times_a_day:
-    description: 'Number of times the docker should be pull from the docker registry. Whole number between 1 and 24'
+    description: 'Number of times a day the docker should be pull from the docker registry. Whole number between 1 and 24'
     required: false
 runs:
   using: "composite"
