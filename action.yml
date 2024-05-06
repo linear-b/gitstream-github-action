@@ -125,8 +125,8 @@ runs:
       if: steps.cache-gitstream-docker.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        docker pull gitstream/rules-engine:latest
-        docker save -o /tmp/${{ env.DOCKER_KEY }}.tar gitstream/rules-engine:latest
+        docker pull gitstream/rules-engine:stage
+        docker save -o /tmp/${{ env.DOCKER_KEY }}.tar gitstream/rules-engine:stage
 
     - name: Docker Load
       if: steps.cache-gitstream-docker.outputs.cache-hit == 'true'
@@ -149,5 +149,5 @@ runs:
           -e CLIENT_PAYLOAD=${{ steps.safe-strings.outputs.client_payload }} \
           -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} \
           -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} \
-          -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine:latest
+          -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine:stage
       shell: bash
