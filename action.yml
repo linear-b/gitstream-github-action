@@ -1,61 +1,69 @@
-name: "gitStream repo agent"
-description: "Public GitHub action for gitStream Continuous Merge"
+name: 'gitStream repo agent'
+description: 'Public GitHub action for gitStream Continuous Merge'
+
 inputs:
   full_repository:
-    description: "Path of full Repository"
+    description: 'Path of full Repository'
     required: true
   head_ref:
-    description: "Head Branch Ref to checkout to"
+    description: 'Head Branch Ref to checkout to'
     required: true
   base_ref:
-    description: "Base Branch Ref to checkout to"
+    description: 'Base Branch Ref to checkout to'
     required: true
   client_payload:
-    description: "The client payload"
+    description: 'The client payload'
     required: true
   installation_id:
-    description: "The github app installation id"
+    description: 'The github app installation id'
     required: false
   resolver_url:
-    description: "Resolver url to send results to"
+    description: 'Resolver url to send results to'
     required: true
   resolver_token:
-    description: "Optional token for resolver"
+    description: 'Optional token for resolver'
     required: false
   debug_mode:
-    description: "Run parser in debug mode"
+    description: 'Run parser in debug mode'
     required: false
-    default: false
+    default: 'false'
   update_times_a_day:
     description: 'Number of times a day the docker should be pull from the docker registry. Whole number between 1 and 24'
     required: false
+
 runs:
-  using: "composite"
+  using: composite
   steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: 3.x
+
     - name: Create GitStream folder
       shell: bash
       run: |
-        rm -rf gitstream
-        mkdir gitstream
-        cd gitstream
-        mkdir repo
+        rm -rf gitstream && mkdir gitstream
+        cd gitstream && mkdir repo
 
     - name: Checkout base branch
       uses: actions/checkout@v4
       with:
         repository: ${{ inputs.full_repository }}
-        ref: ${{ github.event.inputs.base_ref }}
-        path: "gitstream/repo/"
-        token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
+        ref: ${{ inputs.base_ref }}
+        path: gitstream/repo/
+        token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
 
     - name: Escape single quotes
       id: safe-strings
       uses: actions/github-script@v7
       env:
-        BASE_REF_ARG: ${{ github.event.inputs.base_ref }}
-        HEAD_REF_ARG: ${{ github.event.inputs.head_ref }}
-        PAYLOAD_ARG: ${{ github.event.inputs.client_payload }}
-        URL_ARG: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headHttpUrl || fromJSON(fromJSON(github.event.inputs.client_payload)).repoUrl }}
+        BASE_REF_ARG: ${{ inputs.base_ref }}
+        HEAD_REF_ARG: ${{ inputs.head_ref }}
+        PAYLOAD_ARG: ${{ inputs.client_payload }}
+        URL_ARG: ${{ fromJSON(fromJSON(inputs.client_payload)).headHttpUrl || fromJSON(fromJSON(inputs.client_payload)).repoUrl }}
       with:
         script: |
           try {
@@ -79,75 +87,40 @@ runs:
           }
 
     - name: Checkout Pull Request branches history
-      run: |
-        all=2147483647
-        cd gitstream
-        cd repo
-        git fetch --deepen=$all origin $'${{ steps.safe-strings.outputs.base_ref }}'
-        git remote add upstream $'${{ steps.safe-strings.outputs.url }}'
-        git fetch --deepen=$all upstream $'${{ steps.safe-strings.outputs.head_ref }}'
-        git checkout -b $'upstream/${{ steps.safe-strings.outputs.head_ref}}' $'upstream/${{ steps.safe-strings.outputs.head_ref}}'
       shell: bash
+      run: |
+        ALL=2147483647
+        cd gitstream && cd repo
+        git fetch --deepen=$ALL origin $'${{ steps.safe-strings.outputs.base_ref }}'
+        git remote add upstream $'${{ steps.safe-strings.outputs.url }}'
+        git fetch --deepen=$ALL upstream $'${{ steps.safe-strings.outputs.head_ref }}'
+        git checkout -b $'upstream/${{ steps.safe-strings.outputs.head_ref}}' $'upstream/${{ steps.safe-strings.outputs.head_ref}}'
+        git checkout $'${{ steps.safe-strings.outputs.base_ref }}'
+        git checkout $'${{ steps.safe-strings.outputs.head_ref }}'
 
     - name: Create cm folder
       shell: bash
-      run: |
-        cd gitstream
-        mkdir cm
+      run: cd gitstream && mkdir cm
 
     - name: Checkout cm repo
       uses: actions/checkout@v4
-      if: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
+      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true }}
       with:
-        repository: "${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}"
-        ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
-        path: "gitstream/cm/"
+        repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
+        ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmRepoRef }}
+        path: gitstream/cm/
 
-    - name: Get Docker cache key
-      id: cache-key
-      if: ${{ inputs.update_times_a_day }}
-      uses: actions/github-script@v7
+    - name: Volume folder
+      shell: bash
+      run: mv gitstream code
+
+    - name: Run RulesEngine
+      shell: bash
+      run: node ${{ github.action_path }}/dist/index.js
       env:
-        UPDATE_TIMES_A_DAY: ${{ inputs.update_times_a_day }}
-      with:
-        script: |
-          require('${{ github.action_path }}/script.js')(core);
-
-    - name: Cache Docker
-      id: cache-gitstream-docker
-      if: ${{ env.DOCKER_KEY }}
-      uses: actions/cache@v4
-      with:
-        path: /tmp/**.tar
-        key: ${{ env.DOCKER_KEY }}
-
-    - name: Docker Pull
-      if: steps.cache-gitstream-docker.outputs.cache-hit != 'true'
-      shell: bash
-      run: |
-        docker pull gitstream/rules-engine:latest
-        docker save -o /tmp/${{ env.DOCKER_KEY }}.tar gitstream/rules-engine:latest
-
-    - name: Docker Load
-      if: steps.cache-gitstream-docker.outputs.cache-hit == 'true'
-      shell: bash
-      run: docker load -i /tmp/${{ env.DOCKER_KEY }}.tar
-
-    - name: Run The Action
-      if: always()
-      run: |
-        env_file=env.user
-        touch $env_file
-        for var in $(env | cut -d "=" -f 1); do
-          value="${!var}"
-          echo "$var=$value" >> "$env_file"
-        done
-        docker run --env-file $env_file \
-          -v $(pwd)/gitstream:/code \
-          -e HEAD_REF=$'upstream/${{ steps.safe-strings.outputs.head_ref }}' \
-          -e BASE_REF=$'${{ steps.safe-strings.outputs.base_ref }}' \
-          -e CLIENT_PAYLOAD=${{ steps.safe-strings.outputs.client_payload }} \
-          -e RULES_RESOLVER_URL=${{ github.event.inputs.resolver_url }} \
-          -e RULES_RESOLVER_TOKEN=${{ github.event.inputs.resolver_token }} \
-          -e DEBUG_MODE=${{ github.event.inputs.debug_mode }} gitstream/rules-engine:latest
-      shell: bash
+        HEAD_REF: ${{ steps.safe-strings.outputs.head_ref }}
+        BASE_REF: ${{ steps.safe-strings.outputs.base_ref }}
+        CLIENT_PAYLOAD: ${{ steps.safe-strings.outputs.client_payload }}
+        RULES_RESOLVER_URL: ${{ inputs.resolver_url }}
+        RULES_RESOLVER_TOKEN: ${{ inputs.resolver_token }}
+        DEBUG_MODE: ${{ inputs.debug_mode }}

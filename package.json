@@ -1,0 +1,32 @@
+{
+  "name": "gitstream-github-action",
+  "version": "2.0.0",
+  "description": "This GitHub Action enables you to use the gitStream Continuous Merge (CM) script in your repositories to automate code review workflows. The gitStream CM script allows you to define custom automations that run whenever someone opens a new pull request (PR) or makes changes to an existing PR.",
+  "homepage": "https://github.com/linear-b/gitstream-github-action",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/linear-b/gitstream-github-action.git"
+  },
+  "bugs": {
+    "url": "https://github.com/linear-b/gitstream-github-action/issues"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "ncc build index.js --license licenses.txt"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "@linearb/gitstream-core": "1.3.136"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.1"
+  }
+}
