@@ -27,20 +27,13 @@ inputs:
     description: 'Run parser in debug mode'
     required: false
     default: 'false'
-  update_times_a_day:
-    description: 'Number of times a day the docker should be pull from the docker registry. Whole number between 1 and 24'
-    required: false
 
 runs:
   using: composite
   steps:
     - uses: actions/setup-node@v4
       with:
-        node-version: 18
-
-    - uses: actions/setup-python@v5
-      with:
-        python-version: 3.x
+        node-version: 20
 
     - name: Create GitStream folder
       shell: bash
