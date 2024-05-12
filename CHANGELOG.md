@@ -4,6 +4,6 @@
 
 **Release Date:** 2024-05-07
 
-#### Changes
+### Changes
 
 - Initial release of gitstream-github-action without docker
