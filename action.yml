@@ -33,7 +33,7 @@ runs:
   steps:
     - uses: actions/setup-node@v4
       with:
-        node-version-file: .node-version
+        node-version-file: .nvmrc
 
     - name: Create GitStream folder
       shell: bash
