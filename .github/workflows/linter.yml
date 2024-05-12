@@ -30,7 +30,7 @@ jobs:
 
       - name: Init npmrc
         run: |
-          curl -H "X-JFrog-Art-API: ${{ secrets.ARTIFACTORY_API_KEY }}" httpFs://linearb.jfrog.io/linearb/api/npm/npm-local/auth/linearb >> ~/.npmrc
+          curl -H "X-JFrog-Art-API: ${{ secrets.ARTIFACTORY_API_KEY }}" https://linearb.jfrog.io/linearb/api/npm/npm-local/auth/linearb >> .npmrc
 
       - name: Install Dependencies
         run: npm ci
