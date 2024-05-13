@@ -111,6 +111,10 @@ runs:
       shell: bash
       run: mv gitstream code
 
+    - name: Install Dependencies for plugins
+      shell: bash
+      run: npm i --silent moment lodash axios @octokit/rest
+
     - name: Run RulesEngine
       shell: bash
       run: node ${{ github.action_path }}/dist/index.js
