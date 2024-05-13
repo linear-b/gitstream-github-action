@@ -8,7 +8,7 @@ export async function run(): Promise<void> {
 
   try {
     core.info(`gitstream-core ${version}`)
-    RulesEngine().run()
+    await RulesEngine().run()
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) {
@@ -16,5 +16,3 @@ export async function run(): Promise<void> {
     }
   }
 }
-
-run()
