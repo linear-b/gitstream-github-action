@@ -35,6 +35,10 @@ runs:
       with:
         node-version: 20.12.2
 
+    - uses: actions/setup-python@v5
+      with:
+        python-version: 3.x
+
     - name: Create GitStream folder
       shell: bash
       run: |
