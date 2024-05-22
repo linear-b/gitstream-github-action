@@ -145,3 +145,5 @@ out
 # yalc
 .yalc
 .yalc.lock
+
+.DS_Store
