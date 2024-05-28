@@ -86,7 +86,7 @@ runs:
     - name: Checkout Pull Request branches history
       shell: bash
       run: |
-        ALL=0
+        ALL=1
         cd gitstream && cd repo
         git fetch --deepen=$ALL origin $'${{ steps.safe-strings.outputs.base_ref }}'
         git remote add upstream $'${{ steps.safe-strings.outputs.url }}'
