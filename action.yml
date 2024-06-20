@@ -42,7 +42,7 @@ runs:
     - name: Create GitStream folder
       shell: bash
       run: |
-        rm -rf gitstream && mkdir gitstream
+        rm -rf gitstream && rm -rf code && mkdir gitstream
         cd gitstream && mkdir repo
 
     - name: Checkout base branch
