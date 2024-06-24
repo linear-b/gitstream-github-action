@@ -1,6 +1,6 @@
 # install new gitstream-core version and open PR with new changes
 name: Bump gitstream-core
-run-name: Bump gitstream-core to `${{ inputs.version }}`
+run-name: Bump `gitstream-core` to `${{ inputs.version }}`
 
 on:
   workflow_dispatch:
@@ -26,7 +26,7 @@ jobs:
       - name: Set version to ENV
         run: |
           echo "VERSION=${{ inputs.version }}" >> "$GITHUB_ENV"
-          echo "BRANCH_NAME=${{ inputs.version }}-bump-gitstream-core-to-${{ inputs.version }}" >> "$GITHUB_ENV"
+          echo "BRANCH_NAME=${{ inputs.ticket }}-bump-gitstream-core-to-${{ inputs.version }}" >> "$GITHUB_ENV"
 
       - name: Init npmrc
         run: |
@@ -46,7 +46,7 @@ jobs:
           git config --global user.name 'GitHub Actions Bot'
           git config --global user.email 'actions@github.com'
           git add package.json package-lock.json dist/index.js
-          git commit -m "bump `@linearb/gitstream-core` to `${{ env.VERSION }}\n${{ inputs.descritpion }}`"
+          git commit -m "bump `@linearb/gitstream-core` to `${{ env.VERSION }}`" -m "${{ inputs.descritpion }}"
           git push origin HEAD:${{ env.BRANCH_NAME }}
           gh pr create \
             --base v2-develop \
