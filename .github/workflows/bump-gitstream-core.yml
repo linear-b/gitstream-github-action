@@ -1,6 +1,6 @@
 # install new gitstream-core version and open PR with new changes
 name: Bump gitstream-core
-run-name: Bump gitstream-core to `${{ inputs.version }}`
+run-name: Bump `gitstream-core` to `${{ inputs.version }}`
 
 on:
   workflow_dispatch:
