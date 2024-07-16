@@ -127,4 +127,4 @@ runs:
         RULES_RESOLVER_TOKEN: ${{ inputs.resolver_token }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
         GIT_CONTEXT: ${{ steps.safe-strings.outputs.git_context }}
-        SHOULD_USE_CACHE: true
+        SHOULD_USE_CACHE: false
