@@ -126,5 +126,5 @@ runs:
         RULES_RESOLVER_URL: ${{ inputs.resolver_url }}
         RULES_RESOLVER_TOKEN: ${{ inputs.resolver_token }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
-        RUN_DATA_CACHE: ${{ steps.safe-strings.outputs.run_data_cache }}
-        SHOULD_USE_CACHE: true
+        # RUN_DATA_CACHE: ${{ steps.safe-strings.outputs.run_data_cache }}
+        # SHOULD_USE_CACHE: true
