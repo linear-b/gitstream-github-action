@@ -84,6 +84,7 @@ runs:
           }
 
     - name: Checkout Pull Request branches history
+      if: ${{ (fromJson(inputs.client_payload).shouldUseCache || 'false') == 'false' && (fromJson(inputs.client_payload).isCacheEnable || 'false') == 'false' }}
       shell: bash
       run: |
         ALL=2147483647
@@ -96,12 +97,13 @@ runs:
         git checkout $'${{ steps.safe-strings.outputs.head_ref }}'
 
     - name: Create cm folder
+      if: ${{ (fromJson(inputs.client_payload).shouldUseCache || 'false') == 'false' && (fromJson(inputs.client_payload).isCacheEnable || 'false') == 'false' }}
       shell: bash
       run: cd gitstream && mkdir cm
 
     - name: Checkout cm repo
       uses: actions/checkout@v4
-      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true }}
+      if: ${{ (fromJson(inputs.client_payload).shouldUseCache || 'false') == 'false' && (fromJson(inputs.client_payload).isCacheEnable || 'false') == 'false' && fromJson(inputs.client_payload).hasCmRepo == 'true') }}
       with:
         repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmRepoRef }}
@@ -115,6 +117,24 @@ runs:
       shell: bash
       run: npm i --silent moment lodash axios @octokit/rest
 
+    - name: Download cache artifact
+      id: run-data-artifact
+      uses: actions/download-artifact@v4
+      if: ${{ fromJson(inputs.client_payload).shouldUseCache == 'true' && fromJson(inputs.client_payload).isCacheEnable == 'true' }}
+      with:
+        github-token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
+        repository: actions/toolkit
+        run-id: ${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
+        name: output
+
+    - name: Read artifact content
+      id: read-artifact
+      shell: bash
+      run: |
+        cat output/run_data_cache.json
+        RUN_DATA_CACHE=$(cat output/run_data_cache.json | jq -c)
+        echo "RUN_DATA_CACHE=$RUN_DATA_CACHE" >> $GITHUB_ENV
+
     - name: Run RulesEngine
       shell: bash
       run: node ${{ github.action_path }}/dist/index.js
@@ -125,3 +145,6 @@ runs:
         RULES_RESOLVER_URL: ${{ inputs.resolver_url }}
         RULES_RESOLVER_TOKEN: ${{ inputs.resolver_token }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
+        SHOULD_USE_CACHE: ${{ fromJSON(fromJSON(inputs.client_payload)).shouldUseCache || 'false' }}
+        IS_CACHE_ENABLE: ${{ fromJSON(fromJSON(inputs.client_payload)).isCacheEnable || 'false' }}
+        RUN_DATA_CACHE: ${{ env.RUN_DATA_CACHE }}
