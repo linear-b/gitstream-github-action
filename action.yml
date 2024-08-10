@@ -83,31 +83,31 @@ runs:
             process.exit(1);
           }
 
-    - name: Checkout Pull Request branches history
-      if: ${{ (fromJson(inputs.client_payload).shouldUseCache || 'false') == 'false' && (fromJson(inputs.client_payload).isCacheEnable || 'false') == 'false' }}
-      shell: bash
-      run: |
-        ALL=2147483647
-        cd gitstream && cd repo
-        git fetch --deepen=$ALL origin $'${{ steps.safe-strings.outputs.base_ref }}'
-        git remote add upstream $'${{ steps.safe-strings.outputs.url }}'
-        git fetch --deepen=$ALL upstream $'${{ steps.safe-strings.outputs.head_ref }}'
-        git checkout -b $'upstream/${{ steps.safe-strings.outputs.head_ref}}' $'upstream/${{ steps.safe-strings.outputs.head_ref}}'
-        git checkout $'${{ steps.safe-strings.outputs.base_ref }}'
-        git checkout $'${{ steps.safe-strings.outputs.head_ref }}'
+    # - name: Checkout Pull Request branches history
+    #   if: ${{ (fromJson(inputs.client_payload).shouldUseCache || 'false') == 'false' && (fromJson(inputs.client_payload).isCacheEnable || 'false') == 'false' }}
+    #   shell: bash
+    #   run: |
+    #     ALL=2147483647
+    #     cd gitstream && cd repo
+    #     git fetch --deepen=$ALL origin $'${{ steps.safe-strings.outputs.base_ref }}'
+    #     git remote add upstream $'${{ steps.safe-strings.outputs.url }}'
+    #     git fetch --deepen=$ALL upstream $'${{ steps.safe-strings.outputs.head_ref }}'
+    #     git checkout -b $'upstream/${{ steps.safe-strings.outputs.head_ref}}' $'upstream/${{ steps.safe-strings.outputs.head_ref}}'
+    #     git checkout $'${{ steps.safe-strings.outputs.base_ref }}'
+    #     git checkout $'${{ steps.safe-strings.outputs.head_ref }}'
 
-    - name: Create cm folder
-      if: ${{ (fromJson(inputs.client_payload).shouldUseCache || 'false') == 'false' && (fromJson(inputs.client_payload).isCacheEnable || 'false') == 'false' }}
-      shell: bash
-      run: cd gitstream && mkdir cm
+    # - name: Create cm folder
+    #   if: ${{ (fromJson(inputs.client_payload).shouldUseCache || 'false') == 'false' && (fromJson(inputs.client_payload).isCacheEnable || 'false') == 'false' }}
+    #   shell: bash
+    #   run: cd gitstream && mkdir cm
 
-    - name: Checkout cm repo
-      uses: actions/checkout@v4
-      if: ${{ (fromJson(inputs.client_payload).shouldUseCache || 'false') == 'false' && (fromJson(inputs.client_payload).isCacheEnable || 'false') == 'false' && fromJson(inputs.client_payload).hasCmRepo == 'true') }}
-      with:
-        repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
-        ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmRepoRef }}
-        path: gitstream/cm/
+    # - name: Checkout cm repo
+    #   uses: actions/checkout@v4
+    #   if: ${{ (fromJson(inputs.client_payload).shouldUseCache || 'false') == 'false' && (fromJson(inputs.client_payload).isCacheEnable || 'false') == 'false' && fromJson(inputs.client_payload).hasCmRepo == 'true') }}
+    #   with:
+    #     repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
+    #     ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmRepoRef }}
+    #     path: gitstream/cm/
 
     - name: Volume folder
       shell: bash
@@ -120,11 +120,11 @@ runs:
     - name: Download cache artifact
       id: run-data-artifact
       uses: actions/download-artifact@v4
-      if: ${{ fromJson(inputs.client_payload).shouldUseCache == 'true' && fromJson(inputs.client_payload).isCacheEnable == 'true' }}
+      # if: ${{ fromJson(inputs.client_payload).shouldUseCache == 'true' && fromJson(inputs.client_payload).isCacheEnable == 'true' }}
       with:
         github-token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
         repository: actions/toolkit
-        run-id: ${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
+        run-id: 4233 #${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
         name: output
 
     - name: Read artifact content
@@ -145,6 +145,6 @@ runs:
         RULES_RESOLVER_URL: ${{ inputs.resolver_url }}
         RULES_RESOLVER_TOKEN: ${{ inputs.resolver_token }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
-        SHOULD_USE_CACHE: ${{ fromJSON(fromJSON(inputs.client_payload)).shouldUseCache || 'false' }}
-        IS_CACHE_ENABLE: ${{ fromJSON(fromJSON(inputs.client_payload)).isCacheEnable || 'false' }}
+        SHOULD_USE_CACHE: ${{ fromJSON(fromJSON(inputs.client_payload)).shouldUseCache || 'true' }}
+        IS_CACHE_ENABLE: ${{ fromJSON(fromJSON(inputs.client_payload)).isCacheEnable || 'true' }}
         RUN_DATA_CACHE: ${{ env.RUN_DATA_CACHE }}
