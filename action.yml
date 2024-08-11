@@ -124,7 +124,7 @@ runs:
       with:
         github-token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
         repository: yeelali14/EuropeanPaintings
-        run-id: 4233 #${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
+        run-id: 10300578749 #${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
         name: output
 
     - name: Read artifact content
