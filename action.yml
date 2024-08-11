@@ -124,6 +124,7 @@ runs:
         name: output
 
     - name: Read artifact content
+      if: ${{ fromJson(inputs.client_payload).shouldUseCache == 'true' && fromJson(inputs.client_payload).isCacheEnable == 'true' }}
       id: read-artifact
       shell: bash
       run: |
