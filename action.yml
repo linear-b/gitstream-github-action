@@ -103,7 +103,7 @@ runs:
 
     - name: Checkout cm repo
       uses: actions/checkout@v4
-      if: ${{ (fromJson(inputs.client_payload).shouldUseCache || 'false') == 'false' && (fromJson(inputs.client_payload).isCacheEnable || 'false') == 'false' && fromJson(inputs.client_payload).hasCmRepo == 'true') }}
+      if: ${{ (fromJson(inputs.client_payload).shouldUseCache || 'false') == 'false' && (fromJson(inputs.client_payload).isCacheEnable || 'false') == 'false' && fromJson(inputs.client_payload).hasCmRepo == 'true' }}
       with:
         repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmRepoRef }}
