@@ -131,9 +131,10 @@ runs:
       id: read-artifact
       shell: bash
       run: |
-        cat output/run_data_cache.json
-        RUN_DATA_CACHE=$(cat output/run_data_cache.json | jq -c)
+        cat $GITHUB_WORKSPACE/output/run_data_cache.json
+        RUN_DATA_CACHE=$(cat $GITHUB_WORKSPACE/output/run_data_cache.json | jq -c)
         echo "RUN_DATA_CACHE=$RUN_DATA_CACHE" >> $GITHUB_ENV
+
 
     - name: Run RulesEngine
       shell: bash
