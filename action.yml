@@ -117,22 +117,13 @@ runs:
       shell: bash
       run: npm i --silent moment lodash axios @octokit/rest
 
-    - name: Debug Artifact Download Inputs
-      shell: bash
-      run: |
-        echo "Repository: actions/toolkit"
-        echo "Run ID: 4233"
-        echo "Artifact Name: output"
-        echo "Token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}"
-
-
     - name: Download cache artifact
       id: run-data-artifact
       uses: actions/download-artifact@v4
       # if: ${{ fromJson(inputs.client_payload).shouldUseCache == 'true' && fromJson(inputs.client_payload).isCacheEnable == 'true' }}
       with:
         github-token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
-        repository: actions/toolkit
+        repository: yeelali14/EuropeanPaintings
         run-id: 4233 #${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
         name: output
 
