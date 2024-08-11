@@ -126,6 +126,13 @@ runs:
         repository: yeelali14/EuropeanPaintings
         run-id: 10300578749 #${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
         name: output
+  
+    - name: List files in the artifact directory
+      id: list-artifact
+      shell: bash
+      run: |
+        echo "Contents of the workspace directory:"
+        ls -R $GITHUB_WORKSPACE
 
     - name: Read artifact content
       id: read-artifact
