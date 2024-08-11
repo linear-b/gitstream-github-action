@@ -117,6 +117,14 @@ runs:
       shell: bash
       run: npm i --silent moment lodash axios @octokit/rest
 
+    - name: Debug Artifact Download Inputs
+      run: |
+        echo "Repository: actions/toolkit"
+        echo "Run ID: 4233"
+        echo "Artifact Name: output"
+        echo "Token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}"
+
+
     - name: Download cache artifact
       id: run-data-artifact
       uses: actions/download-artifact@v4
