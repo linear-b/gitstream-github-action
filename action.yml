@@ -118,6 +118,7 @@ runs:
       run: npm i --silent moment lodash axios @octokit/rest
 
     - name: Debug Artifact Download Inputs
+      shell: bash
       run: |
         echo "Repository: actions/toolkit"
         echo "Run ID: 4233"
