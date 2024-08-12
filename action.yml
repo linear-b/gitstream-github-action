@@ -27,6 +27,10 @@ inputs:
     description: 'Run parser in debug mode'
     required: false
     default: 'false'
+  is_enable_cache:
+    description: 'Enable git cache'
+    required: false
+    default: 'false'
 
 runs:
   using: composite
@@ -132,6 +136,12 @@ runs:
         RUN_DATA_CACHE=$(cat $GITHUB_WORKSPACE/run_data_cache.json | jq -c)
         echo "RUN_DATA_CACHE=$RUN_DATA_CACHE" >> $GITHUB_ENV
 
+    - name: yeela test
+      shell: bash
+      run: |
+        echo "yeela-debug: ${{ env.MY_ENV_VAR }}"
+
+
     - name: Install Dependencies for plugins
       shell: bash
       run: npm i --silent moment lodash axios @octokit/rest
@@ -146,6 +156,6 @@ runs:
         RULES_RESOLVER_URL: ${{ inputs.resolver_url }}
         RULES_RESOLVER_TOKEN: ${{ inputs.resolver_token }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
-        SHOULD_USE_CACHE: ${{ fromJSON(fromJSON(inputs.client_payload)).shouldUseCache || 'false' }}
-        IS_CACHE_ENABLE: ${{ fromJSON(fromJSON(inputs.client_payload)).isCacheEnable || 'false' }}
-        RUN_DATA_CACHE: ${{ env.RUN_DATA_CACHE }}
+        IS_NON_COMMIT_EVENT: ${{ fromJSON(fromJSON(inputs.client_payload)).isNonCommitEvent || 'false' }}
+        IS_ENABLE_CACHE: ${{ inputs.is_enable_cache }}
+        RUN_DATA_CACHE: ${{ env.RUN_DATA_CACHE}}
