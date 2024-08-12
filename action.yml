@@ -139,7 +139,8 @@ runs:
     - name: yeela test
       shell: bash
       run: |
-        echo "yeela-debug: ${{ env.MY_ENV_VAR }}"
+        echo "yeela-debug env: ${{ env.MY_ENV_VAR }}"
+        echo "yeela-debug vars: ${{ vars.MY_ENV_VAR }}"
 
 
     - name: Install Dependencies for plugins
