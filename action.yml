@@ -85,6 +85,7 @@ runs:
 
     - name: Set Condition Variables
       id: condition-vars
+      shell: bash
       run: |
         echo "is_non_commit_event=$(jq -r '.isNonCommitEvent // "false"' <<< '${{ inputs.client_payload }}')" >> $GITHUB_ENV
         echo "has_cm_repo=$(jq -r '.hasCmRepo // "false"' <<< '${{ inputs.client_payload }}')" >> $GITHUB_ENV
