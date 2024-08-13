@@ -85,16 +85,15 @@ runs:
 
     - name: Set Condition Variables
       id: condition-vars
-      shell: bash
-      run: |
-        client_payload=$(echo '${{ inputs.client_payload }}' | jq -e '.')
-        if [[ $? -ne 0 ]]; then
-          echo "is_non_commit_event=false" >> $GITHUB_ENV
-          echo "has_cm_repo=false" >> $GITHUB_ENV
-        else
-          echo "is_non_commit_event=$(echo '${{ inputs.client_payload }}' | jq -r '.isNonCommitEvent // "false"')" >> $GITHUB_ENV
-          echo "has_cm_repo=$(echo '${{ inputs.client_payload }}' | jq -r '.hasCmRepo // "false"')" >> $GITHUB_ENV
-        fi
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const payload = JSON.parse(core.getInput('client_payload'));
+          const isNonCommitEvent = payload.hasOwnProperty('isNonCommitEvent') ? payload.isNonCommitEvent : "false";
+          const hasCmRepo = payload.hasOwnProperty('hasCmRepo') ? payload.hasCmRepo : "false";
+          
+          core.exportVariable('is_non_commit_event', isNonCommitEvent);
+          core.exportVariable('has_cm_repo', hasCmRepo);
 
     - name: Checkout Pull Request branches history
       if: ${{ env.is_non_commit_event == 'false' }}
