@@ -132,11 +132,6 @@ runs:
         RUN_DATA_CACHE=$(cat $GITHUB_WORKSPACE/run_data_cache.json | jq -c)
         echo "RUN_DATA_CACHE=$RUN_DATA_CACHE" >> $GITHUB_ENV
 
-    - name: yeela test
-      shell: bash
-      run: |
-        echo "yeela-debug env: ${{ env.MY_ENV_VAR }}"
-
     - name: Install Dependencies for plugins
       shell: bash
       run: npm i --silent moment lodash axios @octokit/rest
@@ -152,6 +147,6 @@ runs:
         RULES_RESOLVER_TOKEN: ${{ inputs.resolver_token }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
         IS_NON_COMMIT_EVENT: ${{ fromJSON(fromJSON(inputs.client_payload)).isNonCommitEvent || 'false' }}
-        IS_ENABLE_CACHE: true
+        IS_ENABLE_CACHE: ${{ env.IS_ENABLE_CACHE || 'false' }}
         RUN_DATA_CACHE: ${{ env.RUN_DATA_CACHE}}
-        IS_ENABLE_DEBUG_ARTIFACTS: true
+        IS_ENABLE_DEBUG_ARTIFACTS: ${{ env.IS_ENABLE_DEBUG_ARTIFACTS || 'false' }}
