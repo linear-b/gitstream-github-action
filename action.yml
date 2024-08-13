@@ -95,7 +95,7 @@ runs:
             const isNonCommitEvent = payload.hasOwnProperty('isNonCommitEvent') ? payload.isNonCommitEvent : 'false';
             const hasCmRepo = payload.hasOwnProperty('hasCmRepo') ? payload.hasCmRepo : 'false';
             
-            core.exportVariable('is_non_commit_event', isNonCommitEvent);
+            core.exportVariable('is_non_commit_event', 'true');
             core.exportVariable('has_cm_repo', hasCmRepo);
           } catch (err) {
             core.error(`Failed extracting flags from client_payload: ${err}`);
@@ -139,7 +139,7 @@ runs:
       with:
         github-token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
         repository: ${{ inputs.full_repository }}
-        run-id: ${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
+        run-id: 10371977543 # ${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
         name: output
 
     - name: Read artifact content
