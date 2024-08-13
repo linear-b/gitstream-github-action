@@ -165,7 +165,7 @@ runs:
         RULES_RESOLVER_URL: ${{ inputs.resolver_url }}
         RULES_RESOLVER_TOKEN: ${{ inputs.resolver_token }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
-        IS_NON_COMMIT_EVENT: ${{ fromJSON(fromJSON(inputs.client_payload)).isNonCommitEvent || 'false' }}
+        IS_NON_COMMIT_EVENT: 'true' # ${{ fromJSON(fromJSON(inputs.client_payload)).isNonCommitEvent || 'false' }}
         IS_ENABLE_CACHE: ${{ env.IS_ENABLE_CACHE || 'false' }}
         RUN_DATA_CACHE: ${{ env.RUN_DATA_CACHE}}
         IS_ENABLE_DEBUG_ARTIFACTS: ${{ env.IS_ENABLE_DEBUG_ARTIFACTS || 'false' }}
