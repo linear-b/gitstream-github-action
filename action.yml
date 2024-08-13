@@ -86,14 +86,21 @@ runs:
     - name: Set Condition Variables
       id: condition-vars
       uses: actions/github-script@v7
+      env:
+        PAYLOAD_ARG: ${{ inputs.client_payload }}
       with:
         script: |
-          const payload = JSON.parse(core.getInput('client_payload'));
-          const isNonCommitEvent = payload.hasOwnProperty('isNonCommitEvent') ? payload.isNonCommitEvent : "false";
-          const hasCmRepo = payload.hasOwnProperty('hasCmRepo') ? payload.hasCmRepo : "false";
-          
-          core.exportVariable('is_non_commit_event', isNonCommitEvent);
-          core.exportVariable('has_cm_repo', hasCmRepo);
+          try {
+            const payload = JSON.parse(process.env.PAYLOAD_ARG);
+            const isNonCommitEvent = payload.hasOwnProperty('isNonCommitEvent') ? payload.isNonCommitEvent : 'false';
+            const hasCmRepo = payload.hasOwnProperty('hasCmRepo') ? payload.hasCmRepo : 'false';
+            
+            core.exportVariable('is_non_commit_event', isNonCommitEvent);
+            core.exportVariable('has_cm_repo', hasCmRepo);
+          } catch (err) {
+            core.error(`Failed extracting flags from client_payload: ${err}`);
+            process.exit(1);
+          }
 
     - name: Checkout Pull Request branches history
       if: ${{ env.is_non_commit_event == 'false' }}
