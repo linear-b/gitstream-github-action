@@ -87,8 +87,14 @@ runs:
       id: condition-vars
       shell: bash
       run: |
-        echo "is_non_commit_event=$(jq -r '.isNonCommitEvent // "false"' <<< '${{ inputs.client_payload }}')" >> $GITHUB_ENV
-        echo "has_cm_repo=$(jq -r '.hasCmRepo // "false"' <<< '${{ inputs.client_payload }}')" >> $GITHUB_ENV
+        client_payload=$(echo '${{ inputs.client_payload }}' | jq -e '.')
+        if [[ $? -ne 0 ]]; then
+          echo "is_non_commit_event=false" >> $GITHUB_ENV
+          echo "has_cm_repo=false" >> $GITHUB_ENV
+        else
+          echo "is_non_commit_event=$(echo '${{ inputs.client_payload }}' | jq -r '.isNonCommitEvent // "false"')" >> $GITHUB_ENV
+          echo "has_cm_repo=$(echo '${{ inputs.client_payload }}' | jq -r '.hasCmRepo // "false"')" >> $GITHUB_ENV
+        fi
 
     - name: Checkout Pull Request branches history
       if: ${{ env.is_non_commit_event == 'false' }}
