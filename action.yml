@@ -150,3 +150,11 @@ runs:
         IS_ENABLE_CACHE: ${{ env.IS_ENABLE_CACHE || 'false' }}
         RUN_DATA_CACHE: ${{ env.RUN_DATA_CACHE}}
         IS_ENABLE_DEBUG_ARTIFACTS: ${{ env.IS_ENABLE_DEBUG_ARTIFACTS || 'false' }}
+
+    - name: Upload artifacts
+      if: ${{ env.IS_ENABLE_DEBUG_ARTIFACTS == 'true' || env.IS_ENABLE_CACHE == 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        retention-days: 7
+        name: output
+        path: code/output
