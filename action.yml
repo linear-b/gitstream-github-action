@@ -98,7 +98,7 @@ runs:
       with:
         github-token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
         repository: ${{ inputs.full_repository }}
-        run-id: ${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
+        run-id: 10389925510 # ${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
         name: output
         path: code/output
 
@@ -146,7 +146,7 @@ runs:
         RULES_RESOLVER_URL: ${{ inputs.resolver_url }}
         RULES_RESOLVER_TOKEN: ${{ inputs.resolver_token }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
-        IS_NON_COMMIT_EVENT: ${{ fromJSON(fromJSON(inputs.client_payload)).isNonCommitEvent || 'false' }}
+        IS_NON_COMMIT_EVENT: ${{ env.IS_NON_COMMIT_EVENT || 'false' }}
         ENABLE_CACHE: ${{ env.ENABLE_CACHE || 'false' }}
         ENABLE_DEBUG_ARTIFACTS: ${{ env.ENABLE_DEBUG_ARTIFACTS || 'false' }}
 
