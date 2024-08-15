@@ -87,14 +87,14 @@ runs:
       uses: actions/github-script@v7
       env:
         CLIENT_PAYLOAD_ARG: ${{ inputs.client_payload }}
+        ENABLE_CACHE_ARG: ${{ env.ENABLE_CACHE }}
       with:
         script: |
           require('${{ github.action_path }}/scripts/getConditionVars.js')(core);
 
     - name: Download cache artifact
-      id: run-data-artifact
       uses: actions/download-artifact@v4
-      if: ${{ env.IS_NON_COMMIT_EVENT == 'true' && env.ENABLE_CACHE == 'true' }}
+      if: ${{ env.SKIP_GIT_CLONE }}
       with:
         github-token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
         repository: ${{ inputs.full_repository }}
@@ -103,7 +103,7 @@ runs:
         path: code/output
 
     - name: Checkout Pull Request branches history
-      if: ${{ !(env.IS_NON_COMMIT_EVENT == 'true' && env.ENABLE_CACHE == 'true') }}
+      if: ${{ !env.SKIP_GIT_CLONE }}
       shell: bash
       run: |
         ALL=2147483647
@@ -116,13 +116,13 @@ runs:
         git checkout $'${{ steps.safe-strings.outputs.head_ref }}'
 
     - name: Create cm folder
-      if: ${{ !(env.IS_NON_COMMIT_EVENT == 'true' && env.ENABLE_CACHE == 'true') }}
+      if: ${{ !env.SKIP_GIT_CLONE }}
       shell: bash
       run: cd gitstream && mkdir cm
 
     - name: Checkout cm repo
       uses: actions/checkout@v4
-      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true && (!(env.IS_NON_COMMIT_EVENT == 'true' && env.ENABLE_CACHE == 'true')) }}
+      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true && !env.SKIP_GIT_CLONE }}
       with:
         repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmRepoRef }}
@@ -146,9 +146,9 @@ runs:
         RULES_RESOLVER_URL: ${{ inputs.resolver_url }}
         RULES_RESOLVER_TOKEN: ${{ inputs.resolver_token }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
-        IS_NON_COMMIT_EVENT: ${{ env.IS_NON_COMMIT_EVENT || 'false' }}
+        IS_NON_COMMIT_EVENT: ${{ env.IS_NON_COMMIT_EVENT }}
         ENABLE_CACHE: ${{ env.ENABLE_CACHE || 'false' }}
-        ENABLE_DEBUG_ARTIFACTS: ${{ env.ENABLE_DEBUG_ARTIFACTS || 'false' }}
+        ENABLE_DEBUG_ARTIFACTS: ${{ env.ENABLE_DEBUG_ARTIFACTS }}
 
     - name: Upload artifacts
       if: ${{ env.ENABLE_DEBUG_ARTIFACTS == 'true' || env.ENABLE_CACHE == 'true' }}
