@@ -147,7 +147,7 @@ runs:
         RULES_RESOLVER_TOKEN: ${{ inputs.resolver_token }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
         IS_NON_COMMIT_EVENT: ${{ env.IS_NON_COMMIT_EVENT }}
-        ENABLE_CACHE: ${{ env.ENABLE_CACHE || 'false' }}
+        ENABLE_CACHE: ${{ env.ENABLE_CACHE }}
         ENABLE_DEBUG_ARTIFACTS: ${{ env.ENABLE_DEBUG_ARTIFACTS }}
 
     - name: Upload artifacts
