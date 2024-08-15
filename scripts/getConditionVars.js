@@ -6,10 +6,10 @@ module.exports = core => {
     const isNonCommitEvent = payload.isNonCommitEvent == true
     const skipGitClone = isNonCommitEvent && ENABLE_CACHE_ARG == 'true'
     core.exportVariable('IS_NON_COMMIT_EVENT', isNonCommitEvent.toString())
-    core.exportVariable('SKIP_GIT_CLONE', skipGitClone.toString())
+    core.exportVariable('SKIP_GIT_CLONE', skipGitClone)
   } catch (error) {
     core.setFailed(error.message)
     core.exportVariable('IS_NON_COMMIT_EVENT', 'false')
-    core.exportVariable('SKIP_GIT_CLONE', 'false')
+    core.exportVariable('SKIP_GIT_CLONE', false)
   }
 }
