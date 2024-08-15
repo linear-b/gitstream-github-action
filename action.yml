@@ -98,7 +98,7 @@ runs:
       with:
         github-token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
         repository: ${{ inputs.full_repository }}
-        run-id: ${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
+        run-id: 10389925510 #${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
         name: output
         path: code/output
 
