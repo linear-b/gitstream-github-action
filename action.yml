@@ -90,7 +90,7 @@ runs:
         ENABLE_CACHE_ARG: ${{ env.ENABLE_CACHE }}
       with:
         script: |
-          require('${{ github.action_path }}/scripts/getConditionVars.js')(core);
+          require('${{ github.action_path }}/scripts/get-condition-vars.js')(core);
 
     - name: Download cache artifact
       uses: actions/download-artifact@v4
