@@ -1,3 +1,4 @@
+/* eslint-disable-next-line import/no-commonjs */
 module.exports = core => {
   const CLIENT_PAYLOAD_ARG = process.env.CLIENT_PAYLOAD_ARG
   try {
