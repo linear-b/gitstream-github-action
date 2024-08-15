@@ -94,7 +94,7 @@ runs:
 
     - name: Download cache artifact
       uses: actions/download-artifact@v4
-      if: ${{ env.SKIP_GIT_CLONE === 'true' }}
+      if: ${{ env.SKIP_GIT_CLONE == 'true' }}
       with:
         github-token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
         repository: ${{ inputs.full_repository }}
@@ -103,7 +103,7 @@ runs:
         path: code/output
 
     - name: Checkout Pull Request branches history
-      if: ${{ env.SKIP_GIT_CLONE === 'false' }}
+      if: ${{ env.SKIP_GIT_CLONE == 'false' }}
       shell: bash
       run: |
         ALL=2147483647
@@ -116,13 +116,13 @@ runs:
         git checkout $'${{ steps.safe-strings.outputs.head_ref }}'
 
     - name: Create cm folder
-      if: ${{ env.SKIP_GIT_CLONE === 'false' }}
+      if: ${{ env.SKIP_GIT_CLONE == 'false' }}
       shell: bash
       run: cd gitstream && mkdir cm
 
     - name: Checkout cm repo
       uses: actions/checkout@v4
-      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true && env.SKIP_GIT_CLONE === 'false' }}
+      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true && env.SKIP_GIT_CLONE == 'false' }}
       with:
         repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmRepoRef }}
