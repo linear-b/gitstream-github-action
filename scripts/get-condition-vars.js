@@ -5,10 +5,11 @@ module.exports = core => {
   try {
     core.info(`client_payload_type: ${typeof(CLIENT_PAYLOAD_ARG)}`)
     const payload = JSON.parse(CLIENT_PAYLOAD_ARG)
-    core.info({ payload, ENABLE_CACHE_ARG })
+    core.info(`CLIENT_PAYLOAD_ARG: ${CLIENT_PAYLOAD_ARG}`)
+    core.info(`payload.isNonCommitEvent: ${payload.isNonCommitEvent}`)
     core.info(`yeela-debug get-condtion-vars types: payload.isNonCommitEvent type: ${typeof(payload.isNonCommitEvent)}, ENABLE_CACHE_ARG type: ${typeof(ENABLE_CACHE_ARG)}`)
     const isNonCommitEvent = payload.isNonCommitEvent === true
-    const skipGitClone = isNonCommitEvent && ENABLE_CACHE_ARG === true
+    const skipGitClone = isNonCommitEvent && ENABLE_CACHE_ARG === 'true'
     core.exportVariable('IS_NON_COMMIT_EVENT', isNonCommitEvent.toString())
     core.exportVariable('SKIP_GIT_CLONE', skipGitClone.toString())
   } catch (error) {
