@@ -86,7 +86,7 @@ runs:
     - name: Get condition variables
       uses: actions/github-script@v7
       env:
-        CLIENT_PAYLOAD_ARG: ${{ inputs.client_payload }}
+        IS_NON_COMMIT_ARG: ${{ fromJSON(fromJSON(inputs.client_payload)).isNonCommitEvent }}
         ENABLE_CACHE_ARG: ${{ env.ENABLE_CACHE }}
       with:
         script: |

@@ -1,19 +1,16 @@
 /* eslint-disable import/no-commonjs */
 
 module.exports = core => {
-  const { CLIENT_PAYLOAD_ARG, ENABLE_CACHE_ARG } = process.env
+  const { IS_NON_COMMIT_ARG, ENABLE_CACHE_ARG } = process.env
   try {
-    core.info(`client_payload_type: ${typeof(CLIENT_PAYLOAD_ARG)}`)
-    const payload = JSON.parse(CLIENT_PAYLOAD_ARG)
-    core.info(`CLIENT_PAYLOAD_ARG: ${CLIENT_PAYLOAD_ARG}`)
-    core.info(`payload.isNonCommitEvent: ${payload.isNonCommitEvent}`)
-    core.info(`yeela-debug get-condtion-vars types: payload.isNonCommitEvent type: ${typeof(payload.isNonCommitEvent)}, ENABLE_CACHE_ARG type: ${typeof(ENABLE_CACHE_ARG)}`)
-    const isNonCommitEvent = payload.isNonCommitEvent === true
-    const skipGitClone = isNonCommitEvent && ENABLE_CACHE_ARG === 'true'
-    core.exportVariable('IS_NON_COMMIT_EVENT', isNonCommitEvent.toString())
+    core.info(`IS_NON_COMMIT_ARG: ${typeof(IS_NON_COMMIT_ARG)}. value: ${IS_NON_COMMIT_ARG}`)
+    const skipGitClone = IS_NON_COMMIT_ARG === 'true' && ENABLE_CACHE_ARG === 'true'
+
+    core.exportVariable('IS_NON_COMMIT_EVENT', IS_NON_COMMIT_ARG)
     core.exportVariable('SKIP_GIT_CLONE', skipGitClone.toString())
   } catch (error) {
     core.setFailed(error.message)
+
     core.exportVariable('IS_NON_COMMIT_EVENT', 'false')
     core.exportVariable('SKIP_GIT_CLONE', 'false')
   }
