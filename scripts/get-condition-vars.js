@@ -3,6 +3,7 @@
 module.exports = core => {
   const { CLIENT_PAYLOAD_ARG, ENABLE_CACHE_ARG } = process.env
   try {
+    core.info({ payload: CLIENT_PAYLOAD_ARG, client_payload_type: typeof(CLIENT_PAYLOAD_ARG)})
     const payload = JSON.parse(CLIENT_PAYLOAD_ARG)
     core.info({ payload, ENABLE_CACHE_ARG })
     core.info(`yeela-debug get-condtion-vars types: payload.isNonCommitEvent type: ${typeof(payload.isNonCommitEvent)}, ENABLE_CACHE_ARG type: ${typeof(ENABLE_CACHE_ARG)}`)
