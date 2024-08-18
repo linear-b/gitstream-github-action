@@ -3,7 +3,6 @@
 module.exports = core => {
   const { IS_NON_COMMIT_ARG, ENABLE_CACHE_ARG } = process.env
   try {
-    core.info(`IS_NON_COMMIT_ARG: ${typeof(IS_NON_COMMIT_ARG)}. value: ${IS_NON_COMMIT_ARG}`)
     const skipGitClone = IS_NON_COMMIT_ARG === 'true' && ENABLE_CACHE_ARG === 'true'
 
     core.exportVariable('IS_NON_COMMIT_EVENT', IS_NON_COMMIT_ARG)
