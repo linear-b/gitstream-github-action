@@ -6,7 +6,9 @@ module.exports = core => {
     core.info(`RUN_ID=${RUN_ID}. type: ${typeof RUN_ID}`)
     const isRunIdExists = RUN_ID_ARG !== 'null'
     const skipGitClone =
-      IS_NON_COMMIT_ARG === 'true' && ENABLE_CACHE_ARG === 'true' && isRunIdExists
+      IS_NON_COMMIT_ARG === 'true' &&
+      ENABLE_CACHE_ARG === 'true' &&
+      isRunIdExists
 
     core.exportVariable('IS_NON_COMMIT_EVENT', IS_NON_COMMIT_ARG)
     core.exportVariable('SKIP_GIT_CLONE', skipGitClone.toString())
