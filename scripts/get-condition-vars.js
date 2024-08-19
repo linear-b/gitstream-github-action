@@ -3,7 +3,7 @@
 module.exports = core => {
   const { IS_NON_COMMIT_ARG, ENABLE_CACHE_ARG, RUN_ID_ARG } = process.env
   try {
-    core.info(`RUN_ID=${RUN_ID}. type: ${typeof RUN_ID}`)
+    core.info(`RUN_ID_ARG=${RUN_ID_ARG}. type: ${typeof RUN_ID_ARG}`)
     const isRunIdExists = RUN_ID_ARG !== 'null'
     const skipGitClone =
       IS_NON_COMMIT_ARG === 'true' &&
