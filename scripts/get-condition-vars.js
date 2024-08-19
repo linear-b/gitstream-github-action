@@ -14,7 +14,7 @@ module.exports = core => {
     core.exportVariable('IS_NON_COMMIT_EVENT', IS_NON_COMMIT_ARG)
     core.exportVariable('SKIP_GIT_CLONE', skipGitClone.toString())
   } catch (error) {
-    core.setFailed(error.message)
+    core.warn(error.message)
 
     core.exportVariable('IS_NON_COMMIT_EVENT', 'false')
     core.exportVariable('SKIP_GIT_CLONE', 'false')
