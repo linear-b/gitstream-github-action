@@ -12,6 +12,6 @@ module.exports = core => {
     }
   } catch (error) {
     core.setFailed(`Failed to set cache download status: ${error.message}`)
-    core.exportVariable('CACHE_DOWNLOAD_FAILED', 'false')
+    core.exportVariable('CACHE_DOWNLOAD_FAILED', 'true')
   }
 }

@@ -113,7 +113,7 @@ runs:
         script: require('${{ github.action_path }}/scripts/check-cache-download-status')(core);
 
     - name: Checkout Pull Request branches history
-      if: ${{ env.SKIP_GIT_CLONE == 'false' }}
+      if: ${{ env.SKIP_GIT_CLONE == 'false' || env.CACHE_DOWNLOAD_FAILED == 'true' }}
       shell: bash
       run: |
         ALL=2147483647
@@ -126,13 +126,13 @@ runs:
         git checkout $'${{ steps.safe-strings.outputs.head_ref }}'
 
     - name: Create cm folder
-      if: ${{ env.SKIP_GIT_CLONE == 'false' }}
+      if: ${{ env.SKIP_GIT_CLONE == 'false' || env.CACHE_DOWNLOAD_FAILED == 'true' }}
       shell: bash
       run: cd gitstream && mkdir cm
 
     - name: Checkout cm repo
       uses: actions/checkout@v4
-      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true && env.SKIP_GIT_CLONE == 'false' }}
+      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true && (env.SKIP_GIT_CLONE == 'false' || env.CACHE_DOWNLOAD_FAILED == 'true')}}
       with:
         repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmRepoRef }}
