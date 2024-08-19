@@ -156,7 +156,7 @@ runs:
         RULES_RESOLVER_URL: ${{ inputs.resolver_url }}
         RULES_RESOLVER_TOKEN: ${{ inputs.resolver_token }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
-        SHOULD_SKIP_CLONE: ${{ env.SKIP_GIT_CLONE && env.CACHE_DOWNLOAD_FAILED == 'false'}}
+        SHOULD_SKIP_CLONE: ${{ env.SKIP_GIT_CLONE == 'true' && env.CACHE_DOWNLOAD_FAILED == 'false'}}
         ENABLE_CACHE: ${{ env.ENABLE_CACHE }}
         ENABLE_DEBUG_ARTIFACTS: ${{ env.ENABLE_DEBUG_ARTIFACTS }}
 
