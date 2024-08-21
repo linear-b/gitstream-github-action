@@ -9,7 +9,7 @@ module.exports = core => {
       ENABLE_CACHE_ARG === 'true' &&
       isRunIdExists
 
-    core.warn(
+    core.info(
       `IS_NON_COMMIT_ARG type: ${typeof IS_NON_COMMIT_ARG}. ENABLE_CACHE_ARG type: ${typeof ENABLE_CACHE_ARG}.`
     )
 
