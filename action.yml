@@ -100,7 +100,7 @@ runs:
       continue-on-error: true
       with:
         github-token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
-        repository: repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
+        repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
         run-id: ${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
         name: output
         path: code/output
