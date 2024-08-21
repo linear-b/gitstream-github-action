@@ -9,10 +9,14 @@ module.exports = core => {
       ENABLE_CACHE_ARG === 'true' &&
       isRunIdExists
 
+    core.warn(
+      `IS_NON_COMMIT_ARG type: ${typeof IS_NON_COMMIT_ARG}. ENABLE_CACHE_ARG type: ${typeof ENABLE_CACHE_ARG}.`
+    )
+
     core.exportVariable('IS_NON_COMMIT_EVENT', IS_NON_COMMIT_ARG)
     core.exportVariable('SKIP_GIT_CLONE', skipGitClone.toString())
   } catch (error) {
-    core.warn(error.message)
+    core.warn(`Failed to get condition variables: ${error.message}`)
 
     core.exportVariable('IS_NON_COMMIT_EVENT', 'false')
     core.exportVariable('SKIP_GIT_CLONE', 'false')
