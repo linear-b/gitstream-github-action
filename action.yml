@@ -94,9 +94,21 @@ runs:
           require('${{ github.action_path }}/scripts/get-condition-vars.js')(core);
 
     - name: Download cache artifact
+      id: download-cache-for-cm-repo
+      uses: actions/download-artifact@v4
+      if: ${{ env.SKIP_GIT_CLONE == 'true' && fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true }}
+      continue-on-error: true
+      with:
+        github-token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
+        repository: repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
+        run-id: ${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
+        name: output
+        path: code/output
+
+    - name: Download cache artifact when cmRepo is false
       id: download-cache
       uses: actions/download-artifact@v4
-      if: ${{ env.SKIP_GIT_CLONE == 'true' }}
+      if: ${{ env.SKIP_GIT_CLONE == 'true' && fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == false}}
       continue-on-error: true
       with:
         github-token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
@@ -109,6 +121,7 @@ runs:
       uses: actions/github-script@v7
       env:
         ARTIFACT_OUTCOME_ARG: ${{ steps.download-cache.outcome }}
+        ARTIFACT_OUTCOME_CM_REPO_ARG: ${{ steps.download-cache-for-cm-repo.outcome }}
       with:
         script: require('${{ github.action_path }}/scripts/check-cache-download-status')(core);
 
