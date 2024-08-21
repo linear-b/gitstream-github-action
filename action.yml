@@ -164,6 +164,6 @@ runs:
       if: ${{ env.ENABLE_DEBUG_ARTIFACTS == 'true' || env.ENABLE_CACHE == 'true' }}
       uses: actions/upload-artifact@v4
       with:
-        retention-days: 2
+        retention-days: 7
         name: output
         path: code/output
