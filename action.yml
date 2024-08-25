@@ -93,7 +93,7 @@ runs:
         script: |
           require('${{ github.action_path }}/scripts/get-condition-vars.js')(core);
 
-    - name: Download cache artifact
+    - name: Download cache artifact for cm repo
       id: download-cache-for-cm-repo
       uses: actions/download-artifact@v4
       if: ${{ env.SKIP_GIT_CLONE == 'true' && fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true }}
@@ -172,6 +172,7 @@ runs:
         SHOULD_SKIP_CLONE: ${{ env.SKIP_GIT_CLONE == 'true' && env.CACHE_DOWNLOAD_FAILED == 'false'}}
         ENABLE_CACHE: ${{ env.ENABLE_CACHE }}
         ENABLE_DEBUG_ARTIFACTS: ${{ env.ENABLE_DEBUG_ARTIFACTS }}
+        RUN_ID: ${{ github.run_id }}
 
     - name: Upload artifacts
       if: ${{ env.ENABLE_DEBUG_ARTIFACTS == 'true' || env.ENABLE_CACHE == 'true' }}
