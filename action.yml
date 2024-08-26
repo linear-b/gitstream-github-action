@@ -1,37 +1,39 @@
-name: "gitStream repo agent"
-description: "Public GitHub action for gitStream Continuous Merge"
+name: 'gitStream repo agent'
+description: 'Public GitHub action for gitStream Continuous Merge'
 inputs:
   full_repository:
-    description: "Path of full Repository"
+    description: 'Path of full Repository'
     required: true
   head_ref:
-    description: "Head Branch Ref to checkout to"
+    description: 'Head Branch Ref to checkout to'
     required: true
   base_ref:
-    description: "Base Branch Ref to checkout to"
+    description: 'Base Branch Ref to checkout to'
     required: true
   client_payload:
-    description: "The client payload"
+    description: 'The client payload'
     required: true
   installation_id:
-    description: "The github app installation id"
+    description: 'The github app installation id'
     required: false
   resolver_url:
-    description: "Resolver url to send results to"
+    description: 'Resolver url to send results to'
     required: true
   resolver_token:
-    description: "Optional token for resolver"
+    description: 'Optional token for resolver'
     required: false
   debug_mode:
-    description: "Run parser in debug mode"
+    description: 'Run parser in debug mode'
     required: false
     default: false
   update_times_a_day:
     description: 'Number of times a day the docker should be pull from the docker registry. Whole number between 1 and 24'
     required: false
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
+    - name: Deprecation Notice
+      run: echo "::warning::gitstream-github-action@v1 is deprecated and will be disabled soon. Please upgrade to gitstream-github-action@v2. For more information, follow  https://github.com/linear-b/gitstream-github-action/releases/tag/v2 "
     - name: Create GitStream folder
       shell: bash
       run: |
@@ -45,7 +47,7 @@ runs:
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.base_ref }}
-        path: "gitstream/repo/"
+        path: 'gitstream/repo/'
         token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
 
     - name: Escape single quotes
@@ -99,9 +101,9 @@ runs:
       uses: actions/checkout@v4
       if: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
       with:
-        repository: "${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}"
+        repository: '${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
-        path: "gitstream/cm/"
+        path: 'gitstream/cm/'
 
     - name: Get Docker cache key
       id: cache-key
