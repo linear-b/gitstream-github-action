@@ -32,6 +32,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+      - name: Deprecation Notice
+      shell: bash
+      run: echo "::warning::gitstream-github-action@v1 is deprecated and will be disabled soon. Please upgrade to gitstream-github-action@v2. For more information, follow  https://github.com/linear-b/gitstream-github-action/releases/tag/v2"
     - name: Create GitStream folder
       shell: bash
       run: |
