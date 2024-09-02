@@ -49,7 +49,7 @@ jobs:
           git commit -m "bump `@linearb/gitstream-core` to `${{ env.VERSION }}`" -m "${{ inputs.description }}"
           git push origin HEAD:${{ env.BRANCH_NAME }}
           gh pr create \
-            --base v2-develop \
+            --base develop \
             --title "Bump \`@linearb/gitstream-core\` to \`${{ env.VERSION }}\`" \
             --body-file pr_description.txt \
             --head ${{ env.BRANCH_NAME }} \
