@@ -44,6 +44,7 @@ runs:
       run: |
         rm -rf gitstream && rm -rf code && mkdir gitstream
         cd gitstream && mkdir repo
+        echo "Run ID: ${{ github.run_id }}"
 
     - name: Checkout base branch
       uses: actions/checkout@v4
