@@ -42,7 +42,7 @@ runs:
     - name: Create GitStream folder
       shell: bash
       run: |
-        rm -rf gitstream && mkdir gitstream
+        rm -rf gitstream && rm -rf code && mkdir gitstream
         cd gitstream && mkdir repo
 
     - name: Checkout base branch
@@ -83,7 +83,50 @@ runs:
             process.exit(1);
           }
 
+    - name: Get condition variables
+      uses: actions/github-script@v7
+      env:
+        IS_NON_COMMIT_ARG: ${{ fromJSON(fromJSON(inputs.client_payload)).isNonCommitEvent }}
+        ENABLE_CACHE_ARG: ${{ env.ENABLE_CACHE }}
+        RUN_ID_ARG: ${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
+      with:
+        script: |
+          require('${{ github.action_path }}/scripts/get-condition-vars.js')(core);
+
+    - name: Download cache artifact for cm repo
+      id: download-cache-for-cm-repo
+      uses: actions/download-artifact@v4
+      if: ${{ env.SKIP_GIT_CLONE == 'true' && fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true }}
+      continue-on-error: true
+      with:
+        github-token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
+        repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
+        run-id: ${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
+        name: output
+        path: code/output
+
+    - name: Download cache artifact when cmRepo is false
+      id: download-cache
+      uses: actions/download-artifact@v4
+      if: ${{ env.SKIP_GIT_CLONE == 'true' && fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == false}}
+      continue-on-error: true
+      with:
+        github-token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
+        repository: ${{ inputs.full_repository }}
+        run-id: ${{ fromJSON(fromJSON(inputs.client_payload)).artifactRunId }}
+        name: output
+        path: code/output
+
+    - name: Check if download cache artifact failed
+      uses: actions/github-script@v7
+      env:
+        ARTIFACT_OUTCOME_ARG: ${{ steps.download-cache.outcome }}
+        ARTIFACT_OUTCOME_CM_REPO_ARG: ${{ steps.download-cache-for-cm-repo.outcome }}
+      with:
+        script: require('${{ github.action_path }}/scripts/check-cache-download-status')(core);
+
     - name: Checkout Pull Request branches history
+      if: ${{ env.SKIP_GIT_CLONE == 'false' || env.CACHE_DOWNLOAD_FAILED == 'true' }}
       shell: bash
       run: |
         ALL=1
@@ -96,12 +139,13 @@ runs:
         git checkout $'${{ steps.safe-strings.outputs.head_ref }}'
 
     - name: Create cm folder
+      if: ${{ env.SKIP_GIT_CLONE == 'false' || env.CACHE_DOWNLOAD_FAILED == 'true' }}
       shell: bash
       run: cd gitstream && mkdir cm
 
     - name: Checkout cm repo
       uses: actions/checkout@v4
-      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true }}
+      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true && (env.SKIP_GIT_CLONE == 'false' || env.CACHE_DOWNLOAD_FAILED == 'true')}}
       with:
         repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
         ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmRepoRef }}
@@ -113,7 +157,7 @@ runs:
 
     - name: Install Dependencies for plugins
       shell: bash
-      run: npm i --silent moment lodash axios @octokit/rest
+      run: npm i --silent moment lodash axios @octokit/rest@20.1.1
 
     - name: Run RulesEngine
       shell: bash
@@ -125,3 +169,15 @@ runs:
         RULES_RESOLVER_URL: ${{ inputs.resolver_url }}
         RULES_RESOLVER_TOKEN: ${{ inputs.resolver_token }}
         DEBUG_MODE: ${{ inputs.debug_mode }}
+        SHOULD_SKIP_CLONE: ${{ env.SKIP_GIT_CLONE == 'true' && env.CACHE_DOWNLOAD_FAILED == 'false'}}
+        ENABLE_CACHE: ${{ env.ENABLE_CACHE }}
+        ENABLE_DEBUG_ARTIFACTS: ${{ env.ENABLE_DEBUG_ARTIFACTS }}
+        RUN_ID: ${{ github.run_id }}
+
+    - name: Upload artifacts
+      if: ${{ env.ENABLE_DEBUG_ARTIFACTS == 'true' || env.ENABLE_CACHE == 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        retention-days: 7
+        name: output
+        path: code/output

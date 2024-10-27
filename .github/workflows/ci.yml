@@ -3,10 +3,10 @@ name: Continuous Integration
 on:
   pull_request:
     branches:
-      - v2-develop
+      - develop
   push:
     branches:
-      - v2-develop
+      - develop
 
 permissions:
   contents: read
