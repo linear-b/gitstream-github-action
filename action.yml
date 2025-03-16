@@ -151,6 +151,15 @@ runs:
         ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmRepoRef }}
         path: gitstream/cm/
 
+    - name: Checkout cm org
+      uses: actions/checkout@v4
+      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmOrg == true && (env.SKIP_GIT_CLONE == 'false' || env.CACHE_DOWNLOAD_FAILED == 'true')}}
+      with:
+        repository: 'cm/cm'
+        ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmOrgRef }}
+        path: gitstream/cm-org/
+
+
     - name: Volume folder
       shell: bash
       run: mv gitstream code
