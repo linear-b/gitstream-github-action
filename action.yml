@@ -158,7 +158,7 @@ runs:
       with:
         repository: 'cm/cm'
         ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmOrgRef }}
-        path: gitstream/cm-org/
+        path: gitstream/cm/
 
     - name: Volume folder
       shell: bash
