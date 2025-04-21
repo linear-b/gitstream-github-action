@@ -10,7 +10,7 @@ on:
         required: true
         default: 2.1.133
       ticket:
-        description: LINBEE-XXXX ticket number
+        description: LINBEE-XXXXX ticket number
         default: LINBEE-8514
         required: false
       description:
@@ -54,11 +54,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo -e "Bump \`@linearb/gitstream-core\` to \`${{ env.VERSION }}\`\n\n${{ inputs.description }}" > pr_description.txt
+          echo -e "${{ inputs.description }}" > pr_description.txt
           git config --global user.name 'GitHub Actions Bot'
           git config --global user.email 'actions@github.com'
           git add package.json package-lock.json dist/index.js
-          git commit -m "bump `@linearb/gitstream-core` to `${{ env.VERSION }}`" -m "${{ inputs.description }}"
+          git commit -m "bump `@linearb/gitstream-core` to `${{ env.VERSION }}`"
           git push origin HEAD:${{ env.BRANCH_NAME }}
           gh pr create \
             --base develop \
