@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Version number (ex. "2.1.20")
+        description: Version number (ex. "2.1.133")
         required: true
-        default: 2.1.20
+        default: 2.1.133
       ticket:
         description: LINBEE-XXXX ticket number
         default: LINBEE-8514
@@ -16,6 +16,12 @@ on:
       description:
         description: Add a description for this version
         required: false
+      auto-deploy:
+        description: Add label "auto-deploy" to PR
+        required: false
+        type: boolean
+        default: true
+
 jobs:
   publish_pr:
     name: Publish PR
@@ -27,6 +33,12 @@ jobs:
         run: |
           echo "VERSION=${{ inputs.version }}" >> "$GITHUB_ENV"
           echo "BRANCH_NAME=${{ inputs.ticket }}-bump-gitstream-core-to-${{ inputs.version }}" >> "$GITHUB_ENV"
+          echo "LABEL_ARG=" >> "$GITHUB_ENV"
+
+      - name: Set auto-deploy label
+        if: inputs.auto-deploy
+        run: |
+          echo "LABEL_ARG=--label auto-deploy" >> "$GITHUB_ENV"
 
       - name: Init npmrc
         run: |
@@ -53,4 +65,4 @@ jobs:
             --title "Bump \`@linearb/gitstream-core\` to \`${{ env.VERSION }}\`" \
             --body-file pr_description.txt \
             --head ${{ env.BRANCH_NAME }} \
-            --reviewer ${{ github.actor }}
+            --reviewer ${{ github.actor }} ${{ env.LABEL_ARG }}
