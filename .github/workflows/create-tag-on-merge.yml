@@ -1,0 +1,54 @@
+name: Create Tag on merge
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+    paths:
+      - src/**
+      - dist/**
+      - package*.json
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Create and push new tag
+        run: npm run create-tag
+
+      - name: Get latest commit
+        id: get-commit
+        run: echo "LAST_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: Check for associated pull request and auto-deploy label
+        id: should-deploy
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
+            const commit_sha = '${{ env.LAST_SHA }}';
+            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({ commit_sha, owner, repo });
+            if (prs?.length > 0) {
+              const pull_number = prs[0].number;
+              const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number });
+              return pr.labels.some(label => label.name.includes('auto-deploy'));
+            }
+            return false;
+
+      - name: Create GitHub Release & Deploy
+        if: steps.should-deploy.outputs.result == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create $NEW_TAG --generate-notes
+          git checkout $NEW_TAG
+          npm run update-v2-tag
