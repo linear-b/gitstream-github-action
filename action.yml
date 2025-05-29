@@ -137,7 +137,7 @@ runs:
         git fetch --deepen=$ALL upstream $'${{ steps.safe-strings.outputs.head_ref }}'
         git checkout -b $'upstream/${{ steps.safe-strings.outputs.head_ref}}' $'upstream/${{ steps.safe-strings.outputs.head_ref}}'
         git checkout $'${{ steps.safe-strings.outputs.base_ref }}'
-        git checkout $'${{ steps.safe-strings.outputs.head_ref }}'
+        git checkout upstream/$'${{ steps.safe-strings.outputs.head_ref }}'
 
     - name: Create cm folder
       if: ${{ env.SHOULD_CHECKOUT == 'true' }}
