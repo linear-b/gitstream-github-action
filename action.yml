@@ -126,7 +126,7 @@ runs:
         ARTIFACT_OUTCOME_CM_REPO_ARG: ${{ steps.download-cache-for-cm-repo.outcome }}
       with:
         script: require('${{ github.action_path }}/scripts/check-cache-download-status')(core);
-    
+
     - name: Checkout Pull Request branches history
       if: ${{ env.SHOULD_CHECKOUT == 'true' }}
       shell: bash
