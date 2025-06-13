@@ -52,6 +52,7 @@ runs:
         ref: ${{ inputs.base_ref }}
         path: gitstream/repo/
         token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
+        fetch-depth: 1
 
     - name: Escape single quotes
       id: safe-strings
@@ -125,16 +126,21 @@ runs:
         ARTIFACT_OUTCOME_CM_REPO_ARG: ${{ steps.download-cache-for-cm-repo.outcome }}
       with:
         script: require('${{ github.action_path }}/scripts/check-cache-download-status')(core);
-
+    
     - name: Checkout Pull Request branches history
       if: ${{ env.SHOULD_CHECKOUT == 'true' }}
       shell: bash
+      env:
+        # Use 1 for shallow fetch when SKIP_FULL_HISTORY is non‐empty,
+        # otherwise default to 2147483647 for effectively unlimited 
+        DEPTH: ${{ env.SKIP_FULL_HISTORY && 1 || 2147483647 }}
       run: |
-        ALL=2147483647
-        cd gitstream && cd repo
-        git fetch --deepen=$ALL origin $'${{ steps.safe-strings.outputs.base_ref }}'
+        cd gitstream/repo
+
+        # both origin and upstream use the same DEPTH
+        git fetch --deepen=$DEPTH origin $'${{ steps.safe-strings.outputs.base_ref }}'
         git remote add upstream $'${{ steps.safe-strings.outputs.url }}'
-        git fetch --deepen=$ALL upstream $'${{ steps.safe-strings.outputs.head_ref }}'
+        git fetch --deepen=$DEPTH upstream $'${{ steps.safe-strings.outputs.head_ref }}'
         git checkout -b $'upstream/${{ steps.safe-strings.outputs.head_ref}}' $'upstream/${{ steps.safe-strings.outputs.head_ref}}'
         git checkout $'${{ steps.safe-strings.outputs.base_ref }}'
         git checkout $'${{ steps.safe-strings.outputs.head_ref }}'
