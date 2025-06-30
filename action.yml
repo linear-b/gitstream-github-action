@@ -86,6 +86,7 @@ runs:
         all=2147483647
         cd gitstream
         cd repo
+        git config checkout.defaultRemote origin
         git fetch --deepen=$all origin $'${{ steps.safe-strings.outputs.base_ref }}'
         git remote add upstream $'${{ steps.safe-strings.outputs.url }}'
         git fetch --deepen=$all upstream $'${{ steps.safe-strings.outputs.head_ref }}'
