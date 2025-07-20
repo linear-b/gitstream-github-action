@@ -21,8 +21,8 @@ jobs:
         with:
           node-version-file: .nvmrc
 
-      # - name: Create and push new tag
-      #   run: npm run create-tag
+      - name: Create and push new tag
+        run: npm run create-tag
 
       - name: Get latest commit
         id: get-commit
@@ -73,11 +73,11 @@ jobs:
           cat > release_notes.md << EOF
           ## What's Changed
 
-          - ${PR_TITLE} in [#${PR_NUMBER}](https://github.com/${{ github.repository }}/pull/${PR_NUMBER})
+          ${PR_TITLE} in [#${PR_NUMBER}](https://github.com/${{ github.repository }}/pull/${PR_NUMBER})
+
           ${RELEASE_NOTES}
           EOF
 
-          cat release_notes.md
-          # gh release create $NEW_TAG --notes-file release_notes.md
-          # git checkout $NEW_TAG
-          # npm run update-v2-tag
+          gh release create $NEW_TAG --notes-file release_notes.md
+          git checkout $NEW_TAG
+          npm run update-v2-tag
