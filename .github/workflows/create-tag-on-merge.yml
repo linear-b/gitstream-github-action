@@ -21,8 +21,8 @@ jobs:
         with:
           node-version-file: .nvmrc
 
-      - name: Create and push new tag
-        run: npm run create-tag
+      # - name: Create and push new tag
+      #   run: npm run create-tag
 
       - name: Get latest commit
         id: get-commit
