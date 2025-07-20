@@ -45,7 +45,7 @@ jobs:
               let releaseNote = pr.title;
 
               if (pr.body) {
-                const purposeMatch = pr.body.match(/Purpose:\s*(.+?)(?:\n|Main changes:|$)/s);
+                const purposeMatch = pr.body.match(/Purpose:\s*([^\n]+)/);
 
                 if (purposeMatch) {
                   releaseNote = purposeMatch[1].trim();
