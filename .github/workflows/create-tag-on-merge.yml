@@ -40,6 +40,21 @@ jobs:
             if (prs?.length > 0) {
               const pull_number = prs[0].number;
               const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number });
+              
+              // Extract only the Purpose section from PR description
+              let releaseNote = 'No description provided';
+              if (pr.body) {
+                const purposeMatch = pr.body.match(/Purpose:\s*(.+?)(?:\n|Main changes:|$)/s);
+
+                if (purposeMatch) {
+                  releaseNote = purposeMatch[1].trim();
+                }
+              }
+              
+              core.setOutput('pr-title', pr.title);
+              core.setOutput('release-note', releaseNote);
+              core.setOutput('pr-number', pr.number);
+              
               return pr.labels.some(label => label.name.includes('auto-deploy'));
             }
             return false;
@@ -49,6 +64,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create $NEW_TAG --generate-notes
+          RELEASE_NOTE="${{ steps.should-deploy.outputs.release-note }}"
+
+          gh release create $NEW_TAG --notes "$RELEASE_NOTE"
           git checkout $NEW_TAG
           npm run update-v2-tag
