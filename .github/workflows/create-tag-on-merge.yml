@@ -61,7 +61,7 @@ jobs:
             return false;
 
       - name: Create GitHub Release & Deploy
-        if: steps.should-deploy.outputs.result == 'true'
+        # if: steps.should-deploy.outputs.result == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -78,6 +78,7 @@ jobs:
           **Pull Request:** [#${PR_NUMBER}](https://github.com/${{ github.repository }}/pull/${PR_NUMBER})
           EOF
 
-          gh release create $NEW_TAG --notes-file release_notes.md
-          git checkout $NEW_TAG
-          npm run update-v2-tag
+          cat release_notes.md
+          # gh release create $NEW_TAG --notes-file release_notes.md
+          # git checkout $NEW_TAG
+          # npm run update-v2-tag
