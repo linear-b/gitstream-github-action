@@ -44,7 +44,7 @@ jobs:
               // Extract only the Purpose section from PR description
               let releaseNote = 'No description provided';
               if (pr.body) {
-                const purposeMatch = pr.body.match(/Purpose:\s*(.+?)(?:\n|Main changes:|$)/s);
+                const purposeMatch = pr.body.match(/Purpose:\s*([^\n]+)/);
 
                 if (purposeMatch) {
                   releaseNote = purposeMatch[1].trim();
