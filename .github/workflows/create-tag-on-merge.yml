@@ -61,7 +61,7 @@ jobs:
             return false;
 
       - name: Create GitHub Release & Deploy
-        # if: steps.should-deploy.outputs.result == 'true'
+        if: steps.should-deploy.outputs.result == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
