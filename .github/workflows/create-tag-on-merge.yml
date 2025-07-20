@@ -42,7 +42,8 @@ jobs:
               const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number });
               
               // Extract only the Purpose section from PR description
-              let releaseNote = 'No description provided';
+              let releaseNote = pr.title;
+
               if (pr.body) {
                 const purposeMatch = pr.body.match(/Purpose:\s*(.+?)(?:\n|Main changes:|$)/s);
 
@@ -52,7 +53,7 @@ jobs:
               }
               
               core.setOutput('pr-title', pr.title);
-              core.setOutput('release-note', releaseNote);
+              core.setOutput('release-notes', releaseNote);
               core.setOutput('pr-number', pr.number);
               
               return pr.labels.some(label => label.name.includes('auto-deploy'));
@@ -64,8 +65,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          RELEASE_NOTE="${{ steps.should-deploy.outputs.release-note }}"
+          PR_TITLE="${{ steps.should-deploy.outputs.pr-title }}"
+          RELEASE_NOTES="${{ steps.should-deploy.outputs.release-notes }}"
+          PR_NUMBER="${{ steps.should-deploy.outputs.pr-number }}"
 
-          gh release create $NEW_TAG --notes "$RELEASE_NOTE"
+          # Create release notes with PR title, description, and link
+          cat > release_notes.md << EOF
+          ## ${PR_TITLE}
+
+          ${RELEASE_NOTES}
+
+          **Pull Request:** [#${PR_NUMBER}](https://github.com/${{ github.repository }}/pull/${PR_NUMBER})
+          EOF
+
+          gh release create $NEW_TAG --notes-file release_notes.md
           git checkout $NEW_TAG
           npm run update-v2-tag
