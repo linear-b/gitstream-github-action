@@ -81,3 +81,14 @@ jobs:
           gh release create $NEW_TAG --notes-file release_notes.md
           git checkout $NEW_TAG
           npm run update-v2-tag
+
+      - name: Update v2-lite
+        if: steps.should-deploy.outputs.result == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git checkout v2-lite
+          git checkout $NEW_TAG package.json package-lock.json dist/
+          git add package.json package-lock.json dist/
+          git commit -m "Update v2-lite to $NEW_TAG"
+          git push origin v2-lite
