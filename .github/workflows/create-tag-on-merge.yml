@@ -80,18 +80,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PR_TITLE="${{ steps.should-deploy.outputs.pr-title }}"
-          RELEASE_NOTES="${{ steps.should-deploy.outputs.release-notes }}"
-          PR_NUMBER="${{ steps.should-deploy.outputs.pr-number }}"
-
-          # Create release notes with PR title, description, and link
-          cat > release_notes.md << EOF
-          ## What's Changed
-
-          ${PR_TITLE} in [#${PR_NUMBER}](https://github.com/${{ github.repository }}/pull/${PR_NUMBER})
-
-          ${RELEASE_NOTES}
-          EOF
+          # Create release notes using printf to handle special characters safely
+          printf "## What's Changed\n\n%s in [#%s](https://github.com/${{ github.repository }}/pull/%s)\n\n%s\n" \
+            "${{ steps.should-deploy.outputs.pr-title }}" \
+            "${{ steps.should-deploy.outputs.pr-number }}" \
+            "${{ steps.should-deploy.outputs.pr-number }}" \
+            "${{ steps.should-deploy.outputs.release-notes }}" > release_notes.md
 
           gh release create $NEW_TAG --notes-file release_notes.md
           git checkout $NEW_TAG
