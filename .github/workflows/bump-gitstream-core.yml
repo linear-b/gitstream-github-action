@@ -21,6 +21,9 @@ on:
         required: false
         type: boolean
         default: true
+      reviewer:
+        description: GitHub username to assign as reviewer
+        required: false
 
 jobs:
   publish_pr:
@@ -39,6 +42,12 @@ jobs:
         if: inputs.auto-deploy
         run: |
           echo "LABEL_ARG=--label auto-deploy" >> "$GITHUB_ENV"
+          echo "REVIEWER_ARG=" >> "$GITHUB_ENV"
+
+      - name: Set reviewer
+        if: inputs.reviewer
+        run: |
+          echo "REVIEWER_ARG=--reviewer ${{ inputs.reviewer }}" >> "$GITHUB_ENV"
 
       - name: Init npmrc
         run: |
@@ -64,5 +73,4 @@ jobs:
             --base develop \
             --title "Bump \`@linearb/gitstream-core\` to \`${{ env.VERSION }}\`" \
             --body-file pr_description.txt \
-            --head ${{ env.BRANCH_NAME }} \
-            --reviewer ${{ github.actor }} ${{ env.LABEL_ARG }}
+            --head ${{ env.BRANCH_NAME }} ${{ env.REVIEWER_ARG }} ${{ env.LABEL_ARG }}
