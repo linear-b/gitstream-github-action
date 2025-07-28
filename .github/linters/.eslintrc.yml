@@ -25,6 +25,7 @@ parserOptions:
 
 plugins:
   - jest
+  - github
   - '@typescript-eslint'
 
 extends:
