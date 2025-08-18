@@ -35,8 +35,7 @@ extends:
   - plugin:github/recommended
   - plugin:jest/recommended
 
-rules:
-  {
+rules: {
     'camelcase': 'off',
     'eslint-comments/no-use': 'off',
     'eslint-comments/no-unused-disable': 'off',
@@ -45,7 +44,7 @@ rules:
     'no-console': 'off',
     'no-unused-vars': 'off',
     'prettier/prettier': 'error',
-    'semi': 'off',
+    'semi': ['error', 'never'],
     '@typescript-eslint/array-type': 'error',
     '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/ban-ts-comment': 'error',
@@ -54,7 +53,8 @@ rules:
       ['error', { 'accessibility': 'no-public' }],
     '@typescript-eslint/explicit-function-return-type':
       ['error', { 'allowExpressions': true }],
-    '@typescript-eslint/func-call-spacing': ['error', 'never'],
+    # Use ESLint's built-in rules for formatting instead of deprecated TS-ESLint rules
+    'func-call-spacing': ['error', 'never'],
     '@typescript-eslint/no-array-constructor': 'error',
     '@typescript-eslint/no-empty-interface': 'error',
     '@typescript-eslint/no-explicit-any': 'error',
@@ -77,8 +77,30 @@ rules:
     '@typescript-eslint/promise-function-async': 'error',
     '@typescript-eslint/require-array-sort-compare': 'error',
     '@typescript-eslint/restrict-plus-operands': 'error',
-    '@typescript-eslint/semi': ['error', 'never'],
     '@typescript-eslint/space-before-function-paren': 'off',
-    '@typescript-eslint/type-annotation-spacing': 'error',
     '@typescript-eslint/unbound-method': 'error'
   }
+
+overrides:
+  - files: ['**/*.js']
+    parser: 'espree'
+    parserOptions:
+      ecmaVersion: 2023
+      sourceType: 'module'
+      # Clear TypeScript project references for JavaScript files
+      project: null
+    rules:
+      # Disable TypeScript-specific rules for JavaScript files
+      '@typescript-eslint/explicit-function-return-type': 'off'
+      '@typescript-eslint/no-explicit-any': 'off'
+      '@typescript-eslint/explicit-member-accessibility': 'off'
+      '@typescript-eslint/await-thenable': 'off'
+      '@typescript-eslint/no-for-in-array': 'off'
+      '@typescript-eslint/no-unnecessary-qualifier': 'off'
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off'
+      '@typescript-eslint/prefer-includes': 'off'
+      '@typescript-eslint/prefer-string-starts-ends-with': 'off'
+      '@typescript-eslint/promise-function-async': 'off'
+      '@typescript-eslint/require-array-sort-compare': 'off'
+      '@typescript-eslint/restrict-plus-operands': 'off'
+      '@typescript-eslint/unbound-method': 'off'
