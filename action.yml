@@ -46,7 +46,7 @@ runs:
         cd gitstream && mkdir repo
 
     - name: Checkout base branch
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ inputs.base_ref }}
@@ -146,7 +146,7 @@ runs:
       run: cd gitstream && mkdir cm
 
     - name: Checkout cm repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true && env.SHOULD_CHECKOUT == 'true'}}
       with:
         repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
@@ -154,7 +154,7 @@ runs:
         path: gitstream/cm/
 
     - name: Checkout cm org
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmOrg == true && env.SHOULD_CHECKOUT == 'true'}}
       with:
         repository: 'cm/cm'
