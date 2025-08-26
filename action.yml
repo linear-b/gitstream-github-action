@@ -167,6 +167,7 @@ runs:
 
     - name: Install Dependencies for plugins
       shell: bash
+      continue-on-error: true
       run: npm i --silent moment lodash axios @octokit/rest@20.1.1
 
     - name: Run RulesEngine
