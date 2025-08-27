@@ -71,6 +71,6 @@ jobs:
           git push origin HEAD:${{ env.BRANCH_NAME }}
           gh pr create \
             --base develop \
-            --title "Bump @linearb/gitstream-core to ${{ env.VERSION }}" \
+            --title "Bump \`@linearb/gitstream-core\` to \`${{ env.VERSION }}\`" \
             --body-file pr_description.txt \
             --head ${{ env.BRANCH_NAME }} ${{ env.REVIEWER_ARG }} ${{ env.LABEL_ARG }}
