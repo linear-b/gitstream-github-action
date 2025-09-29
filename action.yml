@@ -130,7 +130,7 @@ runs:
       if: ${{ env.SHOULD_CHECKOUT == 'true' }}
       shell: bash
       run: |
-        ALL=1
+        ALL=100
         cd gitstream && cd repo
         git config checkout.defaultRemote origin
         git fetch --deepen=$ALL origin $'${{ steps.safe-strings.outputs.base_ref }}'
