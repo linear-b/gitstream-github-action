@@ -8,7 +8,9 @@ on:
     paths:
       - src/**
       - dist/**
+      - scripts/**
       - package*.json
+      - action.yml
 
 env:
   SLACK_WEBHOOK: ${{ secrets.SLACK_WORKFLOWS_DEPLOYMENT_WEBHOOK }}
