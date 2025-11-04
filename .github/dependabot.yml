@@ -3,12 +3,12 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
 
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     groups:
       npm-development:
         dependency-type: development
@@ -18,6 +18,5 @@ updates:
       npm-production:
         dependency-type: production
         update-types:
+          - minor
           - patch
-    ignore:
-      - dependency-name: 'eslint'
