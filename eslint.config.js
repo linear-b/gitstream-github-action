@@ -3,6 +3,7 @@ const tseslint = require('typescript-eslint')
 const jestPlugin = require('eslint-plugin-jest')
 const githubPlugin = require('eslint-plugin-github')
 const prettierPlugin = require('eslint-plugin-prettier')
+const { fixupPluginRules } = require('@eslint/compat')
 
 module.exports = tseslint.config(
   // Ignore patterns
@@ -32,7 +33,7 @@ module.exports = tseslint.config(
     },
     plugins: {
       jest: jestPlugin,
-      github: githubPlugin,
+      github: fixupPluginRules(githubPlugin),
       prettier: prettierPlugin
     },
     rules: {

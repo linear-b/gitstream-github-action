@@ -41,6 +41,8 @@
     "@linearb/gitstream-core": "2.1.215"
   },
   "devDependencies": {
+    "@eslint/compat": "^1.2.3",
+    "@eslint/js": "^9.39.1",
     "@jest/globals": "^30.2.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.10.0",
