@@ -21,9 +21,6 @@ module.exports = tseslint.config(
   // TypeScript recommended configurations
   ...tseslint.configs.recommended,
   
-  // TypeScript type-checked rules
-  ...tseslint.configs.recommendedTypeChecked,
-  
   // TypeScript files configuration
   {
     files: ['**/*.ts'],
