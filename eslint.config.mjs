@@ -3,7 +3,6 @@ import tseslint from 'typescript-eslint'
 import jestPlugin from 'eslint-plugin-jest'
 import githubPlugin from 'eslint-plugin-github'
 import prettierPlugin from 'eslint-plugin-prettier'
-import importPlugin from 'eslint-plugin-import'
 import globals from 'globals'
 
 export default [
@@ -108,14 +107,12 @@ export default [
       }
     },
     plugins: {
-      prettier: prettierPlugin,
-      import: importPlugin
+      prettier: prettierPlugin
     },
     rules: {
       'no-console': 'off',
       'prettier/prettier': 'error',
-      semi: ['error', 'never'],
-      'import/no-commonjs': 'off'
+      semi: ['error', 'never']
     }
   }
 ]
