@@ -1,5 +1,3 @@
-/* eslint-disable import/no-commonjs */
-
 module.exports = core => {
   const {
     IS_NON_COMMIT_ARG,

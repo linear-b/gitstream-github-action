@@ -28,7 +28,7 @@
     "bundle": "npm run format:write && npm run package",
     "format:write": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint . -c ./.github/linters/.eslintrc.yml",
+    "lint": "eslint .",
     "package": "ncc build --minify src/index.ts -o dist --license licenses.txt",
     "test": "jest",
     "all": "npm run format:write && npm run lint && npm run test && npm run package",
