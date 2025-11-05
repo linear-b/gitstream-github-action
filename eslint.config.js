@@ -29,6 +29,9 @@ module.exports = tseslint.config(
       parserOptions: {
         projectService: true,
         tsconfigRootDir: __dirname
+      },
+      globals: {
+        ...jestPlugin.environments.globals.globals
       }
     },
     plugins: {
@@ -92,7 +95,11 @@ module.exports = tseslint.config(
       'import/no-namespace': 'off',
       
       // Jest plugin rules
-      ...jestPlugin.configs.recommended.rules
+      'jest/no-disabled-tests': 'warn',
+      'jest/no-focused-tests': 'error',
+      'jest/no-identical-title': 'error',
+      'jest/prefer-to-have-length': 'warn',
+      'jest/valid-expect': 'error'
     }
   },
   
