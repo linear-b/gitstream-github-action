@@ -1,5 +1,3 @@
-/* eslint-disable import/no-commonjs */
-
 module.exports = core => {
   try {
     const { ARTIFACT_OUTCOME_ARG, ARTIFACT_OUTCOME_CM_REPO_ARG } = process.env
