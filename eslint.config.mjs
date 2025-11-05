@@ -1,10 +1,10 @@
 import eslint from '@eslint/js'
-import tseslint from '@typescript-eslint/eslint-plugin'
-import tsparser from '@typescript-eslint/parser'
+import tseslint from 'typescript-eslint'
 import jestPlugin from 'eslint-plugin-jest'
 import githubPlugin from 'eslint-plugin-github'
 import prettierPlugin from 'eslint-plugin-prettier'
 import importPlugin from 'eslint-plugin-import'
+import globals from 'globals'
 
 export default [
   // Global ignores
@@ -12,51 +12,50 @@ export default [
     ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', '**/*.json']
   },
 
-  // Base configuration for all files
+  // Base ESLint recommended config for all files
   eslint.configs.recommended,
 
   // TypeScript files configuration
   {
     files: ['**/*.ts'],
     languageOptions: {
-      parser: tsparser,
+      parser: tseslint.parser,
       parserOptions: {
         ecmaVersion: 2023,
         sourceType: 'module',
-        project: ['./.github/linters/tsconfig.json', './tsconfig.json']
+        project: ['./.github/linters/tsconfig.json', './tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname
       },
       globals: {
-        Atomics: 'readonly',
-        SharedArrayBuffer: 'readonly',
-        console: 'readonly',
-        process: 'readonly',
-        __dirname: 'readonly',
-        __filename: 'readonly',
-        module: 'readonly',
-        require: 'readonly',
-        exports: 'readonly',
-        Buffer: 'readonly',
-        global: 'readonly'
+        ...globals.node,
+        ...globals.es2021,
+        ...globals.jest
       }
     },
     plugins: {
-      '@typescript-eslint': tseslint,
+      '@typescript-eslint': tseslint.plugin,
       jest: jestPlugin,
       github: githubPlugin,
       prettier: prettierPlugin
     },
     rules: {
-      // Spread recommended rules from plugins
-      ...tseslint.configs['eslint-recommended'].overrides[0].rules,
-      ...tseslint.configs.recommended.rules,
+      // TypeScript recommended rules
+      ...tseslint.configs.recommended[0].rules,
+      ...tseslint.configs.stylistic[0].rules,
+
+      // Jest recommended rules
       ...jestPlugin.configs.recommended.rules,
 
-      // Custom rules
+      // Prettier integration
+      'prettier/prettier': 'error',
+
+      // Custom overrides
       camelcase: 'off',
       'no-console': 'off',
       'no-unused-vars': 'off',
-      'prettier/prettier': 'error',
       semi: ['error', 'never'],
+
+      // TypeScript-specific custom rules
       '@typescript-eslint/array-type': 'error',
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/ban-ts-comment': 'error',
@@ -99,22 +98,13 @@ export default [
 
   // JavaScript files configuration
   {
-    files: ['**/*.js'],
+    files: ['**/*.js', '**/*.mjs'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
       globals: {
-        Atomics: 'readonly',
-        SharedArrayBuffer: 'readonly',
-        console: 'readonly',
-        process: 'readonly',
-        __dirname: 'readonly',
-        __filename: 'readonly',
-        module: 'readonly',
-        require: 'readonly',
-        exports: 'readonly',
-        Buffer: 'readonly',
-        global: 'readonly'
+        ...globals.node,
+        ...globals.es2021
       }
     },
     plugins: {
