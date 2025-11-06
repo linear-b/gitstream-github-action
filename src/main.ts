@@ -3,6 +3,9 @@ import { RulesEngine } from '@linearb/gitstream-core'
 import { version } from '@linearb/gitstream-core/package.json'
 import { installBlack } from './support-python'
 
+// Hint for ncc to bundle WASM package (used dynamically in gitstream-core)
+import '@wasm-fmt/ruff_fmt'
+
 export async function run(): Promise<void> {
   await installBlack()
 
