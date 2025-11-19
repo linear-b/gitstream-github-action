@@ -29,7 +29,8 @@
     "format:write": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "package": "ncc build --minify src/index.ts -o dist --license licenses.txt",
+    "copy-wasm": "mkdir -p dist/node_modules/@wasm-fmt && cp -r node_modules/@wasm-fmt/ruff_fmt dist/node_modules/@wasm-fmt/",
+    "package": "ncc build --minify src/index.ts -o dist --license licenses.txt --external @wasm-fmt/ruff_fmt && npm run copy-wasm",
     "test": "jest",
     "all": "npm run format:write && npm run lint && npm run test && npm run package",
     "create-tag": "./scripts/tag-version.sh",
@@ -38,7 +39,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "@linearb/gitstream-core": "2.1.217"
+    "@linearb/gitstream-core": "2.1.220",
+    "@wasm-fmt/ruff_fmt": "^0.10.0"
   },
   "devDependencies": {
     "@jest/globals": "^30.2.0",
@@ -47,7 +49,6 @@
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.39.1",
     "@vercel/ncc": "^0.38.4",
-    "@wasm-fmt/ruff_fmt": "^0.10.0",
     "eslint": "^9.39.1",
     "eslint-plugin-github": "^5.1.8",
     "eslint-plugin-jest": "^28.13.0",
