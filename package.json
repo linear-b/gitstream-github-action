@@ -38,8 +38,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "@linearb/gitstream-core": "2.1.217",
-    "@wasm-fmt/ruff_fmt": "^0.10.0"
+    "@linearb/gitstream-core": "2.1.217"
   },
   "devDependencies": {
     "@jest/globals": "^30.2.0",
@@ -48,6 +47,7 @@
     "@typescript-eslint/eslint-plugin": "^8.46.3",
     "@typescript-eslint/parser": "^8.39.1",
     "@vercel/ncc": "^0.38.4",
+    "@wasm-fmt/ruff_fmt": "^0.10.0",
     "eslint": "^9.39.1",
     "eslint-plugin-github": "^5.1.8",
     "eslint-plugin-jest": "^28.13.0",
