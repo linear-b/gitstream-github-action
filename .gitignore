@@ -147,3 +147,6 @@ out
 .yalc.lock
 
 .DS_Store
+
+# Allow dist/node_modules for WASM dependencies
+!dist/node_modules/
