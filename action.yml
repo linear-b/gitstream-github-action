@@ -129,9 +129,9 @@ runs:
         ALL=100
         cd gitstream && cd repo
         git config checkout.defaultRemote origin
-        git fetch --deepen=$ALL origin $'${{ steps.safe-strings.outputs.base_ref }}'
+        git fetch --shallow-since="6 months ago" origin $'${{ steps.safe-strings.outputs.base_ref }}'
         git remote add upstream $'${{ steps.safe-strings.outputs.url }}'
-        git fetch --deepen=$ALL upstream $'${{ steps.safe-strings.outputs.head_ref }}'
+        git fetch --shallow-since="6 months ago" upstream $'${{ steps.safe-strings.outputs.head_ref }}'
         git checkout -b $'upstream/${{ steps.safe-strings.outputs.head_ref}}' $'upstream/${{ steps.safe-strings.outputs.head_ref}}'
         git checkout $'${{ steps.safe-strings.outputs.base_ref }}'
         git checkout $'${{ steps.safe-strings.outputs.head_ref }}'
