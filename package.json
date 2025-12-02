@@ -39,25 +39,25 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "@linearb/gitstream-core": "2.1.227",
-    "@wasm-fmt/ruff_fmt": "^0.10.0"
+    "@linearb/gitstream-core": "2.1.228",
+    "@wasm-fmt/ruff_fmt": "^0.12.1"
   },
   "devDependencies": {
     "@jest/globals": "^30.2.0",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.10.0",
-    "@typescript-eslint/eslint-plugin": "^8.46.3",
-    "@typescript-eslint/parser": "^8.39.1",
+    "@types/node": "^24.10.1",
+    "@typescript-eslint/eslint-plugin": "^8.48.1",
+    "@typescript-eslint/parser": "^8.48.1",
     "@vercel/ncc": "^0.38.4",
     "eslint": "^9.39.1",
     "eslint-plugin-github": "^5.1.8",
-    "eslint-plugin-jest": "^28.13.0",
+    "eslint-plugin-jest": "^29.2.1",
     "eslint-plugin-jsonc": "^2.21.0",
     "eslint-plugin-prettier": "^5.5.4",
     "jest": "^30.2.0",
-    "prettier": "^3.6.2",
+    "prettier": "^3.7.3",
     "prettier-eslint": "^16.4.2",
-    "ts-jest": "^29.4.5",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.9.3"
   },
   "jest": {
