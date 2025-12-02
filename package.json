@@ -40,14 +40,14 @@
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@linearb/gitstream-core": "2.1.228",
-    "@wasm-fmt/ruff_fmt": "^0.10.0"
+    "@wasm-fmt/ruff_fmt": "^0.12.1"
   },
   "devDependencies": {
     "@jest/globals": "^30.2.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.10.1",
-    "@typescript-eslint/eslint-plugin": "^8.48.0",
-    "@typescript-eslint/parser": "^8.48.0",
+    "@typescript-eslint/eslint-plugin": "^8.48.1",
+    "@typescript-eslint/parser": "^8.48.1",
     "@vercel/ncc": "^0.38.4",
     "eslint": "^9.39.1",
     "eslint-plugin-github": "^5.1.8",
