@@ -40,7 +40,7 @@
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@linearb/gitstream-core": "2.1.227",
-    "@wasm-fmt/ruff_fmt": "^0.10.0"
+    "@wasm-fmt/ruff_fmt": "^0.12.1"
   },
   "devDependencies": {
     "@jest/globals": "^30.2.0",
