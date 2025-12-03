@@ -35,12 +35,6 @@ runs:
       with:
         node-version: 20.12.2
 
-    - name: Create GitStream folder
-      shell: bash
-      run: |
-        rm -rf gitstream && rm -rf code && mkdir gitstream
-        cd gitstream && mkdir repo
-
     - name: Checkout base branch
       uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       with:
@@ -91,10 +85,6 @@ runs:
         git checkout $'${{ steps.safe-strings.outputs.base_ref }}'
         git checkout $'${{ steps.safe-strings.outputs.head_ref }}'
 
-    - name: Create cm folder
-      shell: bash
-      run: cd gitstream && mkdir cm
-
     - name: Checkout cm repo
       uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true }}
@@ -113,16 +103,13 @@ runs:
         path: gitstream/cm/
         fetch-depth: 1
 
-    - name: Volume folder
-      shell: bash
-      run: mv gitstream code
-
     - name: Install Dependencies for plugins
       shell: bash
       continue-on-error: true
       run: npm i --silent moment lodash axios @octokit/rest@20.1.1
 
     - name: Run RulesEngine
+      working-directory: gitstream/repo
       shell: bash
       run: node ${{ github.action_path }}/dist/index.js
       env:
@@ -141,4 +128,4 @@ runs:
       with:
         retention-days: 7
         name: output
-        path: code/output
+        path: gitstream/output
