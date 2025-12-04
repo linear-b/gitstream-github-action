@@ -5,7 +5,6 @@ import { version } from '@linearb/gitstream-core/package.json'
 
 jest.mock('@actions/core')
 jest.mock('@linearb/gitstream-core')
-jest.mock('../src/support-python', () => ({ installBlack: jest.fn() }))
 
 describe('run', () => {
   const infoMock = jest.spyOn(core, 'info')

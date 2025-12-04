@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
@@ -118,13 +118,25 @@ jobs:
           git commit -m "Update v2-lite to $NEW_TAG"
           git push origin v2-lite
 
-      - name: Slack Notification
-        if: steps.should-deploy.outputs.result == 'true' && always()
-        uses: linear-b/shared-workflows/.github/actions/slack-notification@develop
-        with:
-          status: ${{ job.status }}
-          webhook_url: ${{ env.SLACK_WEBHOOK }}
-          footer_links: <${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.NEW_TAG }}|${{ env.NEW_TAG }}>
-          message: |
-            ${{ job.status == 'success' && 'Released' || 'Failed to release' }} `${{ env.NEW_TAG }}` to `gitstream-github-action`
-            ${{ job.status == 'success' && steps.should-deploy.outputs.release-notes || '' }}
+      - name: Success Slack Notification
+        if: steps.should-deploy.outputs.result == 'true' && success()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          MSG_MINIMAL: true
+          SLACK_WEBHOOK: ${{ env.SLACK_WEBHOOK }}
+          SLACK_TITLE: ${{ github.repository }}
+          SLACK_FOOTER: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run> | <${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.NEW_TAG }}|${{ env.NEW_TAG }}>
+          SLACK_MESSAGE: |
+            Released `${{ env.NEW_TAG }}` to `gitstream-github-action`
+            ${{ steps.should-deploy.outputs.release-notes }}
+
+      - name: Failure Slack Notification
+        if: steps.should-deploy.outputs.result == 'true' && failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          MSG_MINIMAL: true
+          SLACK_WEBHOOK: ${{ env.SLACK_WEBHOOK }}
+          SLACK_TITLE: ${{ github.repository }}
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_FOOTER: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow run>
+          SLACK_MESSAGE: Failed to release `${{ env.NEW_TAG }}` to `gitstream-github-action`
