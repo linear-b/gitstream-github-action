@@ -31,6 +31,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.CI_USER_GIT_TOKEN }}
 
       - name: Set version to ENV
         run: |
@@ -45,9 +47,9 @@ jobs:
           echo "LABEL_ARG=--label auto-deploy" >> "$GITHUB_ENV"
 
       - name: Set reviewer
-        if: inputs.reviewer
         run: |
-          echo "REVIEWER_ARG=--reviewer ${{ inputs.reviewer }}" >> "$GITHUB_ENV"
+          REVIEWER="${{ inputs.reviewer || github.actor }}"
+          echo "REVIEWER_ARG=--reviewer $REVIEWER" >> "$GITHUB_ENV"
 
       - name: Init npmrc
         run: |
@@ -60,8 +62,9 @@ jobs:
         run: npm run all
 
       - name: Create PR for ${{ env.VERSION }}
+        id: create-pr
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.CI_USER_GIT_TOKEN }}
         run: |
           echo -e "${{ inputs.description }}" > pr_description.txt
           git config --global user.name 'GitHub Actions Bot'
@@ -69,8 +72,16 @@ jobs:
           git add package.json package-lock.json dist/index.js
           git commit -m "bump @linearb/gitstream-core to ${{ env.VERSION }}"
           git push origin HEAD:${{ env.BRANCH_NAME }}
-          gh pr create \
+          PR_URL=$(gh pr create \
             --base develop \
-            --title "Bump \`@linearb/gitstream-core\` to \`${{ env.VERSION }}\`" \
+            --title 'Bump `@linearb/gitstream-core` to `${{ env.VERSION }}`' \
             --body-file pr_description.txt \
-            --head ${{ env.BRANCH_NAME }} ${{ env.REVIEWER_ARG }} ${{ env.LABEL_ARG }}
+            --head ${{ env.BRANCH_NAME }} ${{ env.REVIEWER_ARG }} ${{ env.LABEL_ARG }})
+          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+
+      - name: Output PR URL
+        if: success()
+        run: |
+          echo "✅ PR created successfully: ${{ steps.create-pr.outputs.pr_url }}"
+          echo "**✅ PR Created**" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.create-pr.outputs.pr_url }}" >> $GITHUB_STEP_SUMMARY
