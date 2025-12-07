@@ -31,8 +31,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          token: ${{ github.token }}
 
       - name: Set version to ENV
         run: |
@@ -47,9 +45,9 @@ jobs:
           echo "LABEL_ARG=--label auto-deploy" >> "$GITHUB_ENV"
 
       - name: Set reviewer
+        if: inputs.reviewer
         run: |
-          REVIEWER="${{ inputs.reviewer || github.actor }}"
-          echo "REVIEWER_ARG=--reviewer $REVIEWER" >> "$GITHUB_ENV"
+          echo "REVIEWER_ARG=--reviewer ${{ inputs.reviewer }}" >> "$GITHUB_ENV"
 
       - name: Init npmrc
         run: |
