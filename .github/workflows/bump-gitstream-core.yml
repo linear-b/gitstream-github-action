@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Version number (ex. "2.1.207")
+        description: Version number (ex. "2.1.230")
         required: true
-        default: 2.1.207
+        default: 2.1.230
       ticket:
         description: LINBEE-XXXXX ticket number
         default: LINBEE-8514
