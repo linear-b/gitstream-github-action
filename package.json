@@ -39,7 +39,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@actions/core": "^2.0.1",
-    "@linearb/gitstream-core": "2.1.244-2",
+    "@linearb/gitstream-core": "2.1.244-3",
     "@wasm-fmt/ruff_fmt": "^0.14.10"
   },
   "devDependencies": {
