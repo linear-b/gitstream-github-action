@@ -39,8 +39,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@actions/core": "^2.0.2",
-    "@linearb/gitstream-core": "2.1.248",
-    "@wasm-fmt/ruff_fmt": "^0.14.13"
+    "@linearb/gitstream-core": "2.1.249",
+    "@wasm-fmt/ruff_fmt": "^0.14.14"
   },
   "devDependencies": {
     "@jest/globals": "^30.2.0",
