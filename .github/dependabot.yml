@@ -9,6 +9,10 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    ignore:
+      - dependency-name: '@actions/core'
+        update-types:
+          - 'version-update:semver-major'
     groups:
       npm-development:
         dependency-type: development
