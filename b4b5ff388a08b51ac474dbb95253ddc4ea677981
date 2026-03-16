@@ -1,0 +1,23 @@
+package.json
+  be4d1b5996d7527d 33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "b4b5ff388a08b51ac474dbb95253ddc4ea677981",
+  "prompts": {
+    "be4d1b5996d7527d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "28509913-6c30-4a4e-96e7-3475416a2db6",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Misha Kav <misha.kav@gmail.com>",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
