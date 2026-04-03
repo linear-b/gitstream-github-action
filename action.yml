@@ -120,7 +120,7 @@ runs:
     - name: Install Dependencies for plugins
       shell: bash
       continue-on-error: true
-      run: npm i --silent moment lodash axios @octokit/rest@20.1.1
+      run: npm i --silent moment@2.30.1 lodash@4.18.1 axios@1.14.0 @octokit/rest@20.1.1
 
     - name: Run RulesEngine
       shell: bash
