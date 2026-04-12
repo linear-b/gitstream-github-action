@@ -117,19 +117,11 @@ runs:
       shell: bash
       run: mv gitstream code
 
-    - name: Clear npm cache
-      shell: bash
-      run: npm cache clean --force
-
-    - name: Install Dependencies for plugins
-      shell: bash
-      continue-on-error: true
-      run: npm i --ignore-scripts moment@2.30.1 lodash@4.18.1 axios@1.14.0 @octokit/rest@20.1.1
-
     - name: Run RulesEngine
       shell: bash
       run: node ${{ github.action_path }}/dist/index.js
       env:
+        NODE_PATH: ${{ github.action_path }}/dist/node_modules
         HEAD_REF: ${{ steps.safe-strings.outputs.head_ref }}
         BASE_REF: ${{ steps.safe-strings.outputs.base_ref }}
         CLIENT_PAYLOAD: ${{ steps.safe-strings.outputs.client_payload }}
