@@ -1,0 +1,23 @@
+.github/workflows/check-dist.yml
+  04f872ba8cd6b2ca 46,48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "82a0b6447d8f57fd11e70750aa24410dab9c0d32",
+  "prompts": {
+    "04f872ba8cd6b2ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8e18ee98-d079-4d2b-9304-d49b387d7cb5",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Misha Kav",
+      "messages": [],
+      "total_additions": 2,
+      "total_deletions": 2,
+      "accepted_lines": 2,
+      "overriden_lines": 0
+    }
+  }
+}
