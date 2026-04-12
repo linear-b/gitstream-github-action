@@ -38,6 +38,7 @@ To add support for `.cm` files in your code editor, see our
 Imported by the action's source code. Must be listed in `package.json` for build time.
 
 To add:
+
 1. `npm install <package>` and import it in `src/`
 2. If it can't be bundled by ncc (WASM, native addons), add `--external <package>` to the `package` script and add it to `vendor-plugins` as well
 
@@ -46,6 +47,7 @@ To add:
 Packages that user plugins can `require()` at runtime. Installed into `dist/node_modules/` at build time and committed to the repo.
 
 To add:
+
 1. Add with a pinned version to the `vendor-plugins` script in `package.json`
 2. Run `npm run package` and commit the updated `dist/node_modules/`
 
