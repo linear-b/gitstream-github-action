@@ -31,6 +31,24 @@ help in improving gitStream!
 To add support for `.cm` files in your code editor, see our
 [FAQ](https://docs.gitstream.cm/faq/#is-there-cm-syntax-highlighting).
 
+## Managing Dependencies
+
+### Action dependencies (`package.json` → `dependencies`)
+
+Imported by the action's source code. Must be listed in `package.json` for build time.
+
+To add:
+1. `npm install <package>` and import it in `src/`
+2. If it can't be bundled by ncc (WASM, native addons), add `--external <package>` to the `package` script and add it to `vendor-plugins` as well
+
+### Plugin dependencies (`vendor-plugins` script in `package.json`)
+
+Packages that user plugins can `require()` at runtime. Installed into `dist/node_modules/` at build time and committed to the repo.
+
+To add:
+1. Add with a pinned version to the `vendor-plugins` script in `package.json`
+2. Run `npm run package` and commit the updated `dist/node_modules/`
+
 ## License
 
 The gitStream GitHub Action is licensed under the Apache License. See
