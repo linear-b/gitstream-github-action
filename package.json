@@ -39,7 +39,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@actions/core": "^2.0.3",
-    "@linearb/gitstream-core": "2.1.270"
+    "@linearb/gitstream-core": "2.1.271"
   },
   "devDependencies": {
     "@jest/globals": "^30.3.0",
