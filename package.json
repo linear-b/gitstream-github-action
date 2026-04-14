@@ -29,7 +29,7 @@
     "format:write": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "vendor-plugins": "npm install --prefix dist --ignore-scripts --no-save moment@2.30.1 lodash@4.18.1 axios@1.14.0 @octokit/rest@20.1.1 @wasm-fmt/ruff_fmt@0.14.14",
+    "vendor-plugins": "npm install --prefix dist --ignore-scripts --no-save moment@2.30.1 lodash@4.18.1 axios@1.15.0 @octokit/rest@20.1.1 @wasm-fmt/ruff_fmt@0.15.10",
     "package": "ncc build --minify src/index.ts -o dist --license licenses.txt --external @wasm-fmt/ruff_fmt --external isolated-vm && npm run vendor-plugins",
     "test": "jest",
     "all": "npm run format:write && npm run lint && npm run test && npm run package",
@@ -57,7 +57,7 @@
     "prettier-eslint": "^16.4.2",
     "ts-jest": "^29.4.9",
     "typescript": "^6.0.2",
-    "typescript-eslint": "^8.58.1"
+    "typescript-eslint": "^8.58.2"
   },
   "jest": {
     "preset": "ts-jest",
