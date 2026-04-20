@@ -15,6 +15,10 @@ on:
 env:
   SLACK_WEBHOOK: ${{ secrets.SLACK_WORKFLOWS_DEPLOYMENT_WEBHOOK }}
 
+permissions:
+  contents: write
+  pull-requests: read
+
 jobs:
   create-tag:
     runs-on: ubuntu-24.04

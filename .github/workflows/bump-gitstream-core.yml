@@ -25,6 +25,8 @@ on:
         description: GitHub username to assign as reviewer
         required: false
 
+permissions: {}
+
 jobs:
   publish_pr:
     name: Publish PR
