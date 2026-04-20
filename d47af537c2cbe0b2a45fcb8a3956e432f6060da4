@@ -1,0 +1,38 @@
+.github/workflows/bump-gitstream-core.yml
+  e93a9d54411a421f 28-29
+.github/workflows/create-tag-on-merge.yml
+  e93a9d54411a421f 18-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "d47af537c2cbe0b2a45fcb8a3956e432f6060da4",
+  "prompts": {
+    "1193cbf27a5f376c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3382e0c5-1564-4461-bf86-e9251749786e",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Misha Kav",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 37,
+      "overriden_lines": 0
+    },
+    "e93a9d54411a421f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7a082db4-2056-48e3-a8f5-dc1305d0e7df",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Misha Kav",
+      "messages": [],
+      "total_additions": 6,
+      "total_deletions": 0,
+      "accepted_lines": 6,
+      "overriden_lines": 0
+    }
+  }
+}
