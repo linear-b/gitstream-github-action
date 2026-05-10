@@ -36,6 +36,10 @@ jobs:
         with:
           token: ${{ secrets.CI_USER_GIT_TOKEN }}
 
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
       - name: Set version to ENV
         run: |
           echo "VERSION=${{ inputs.version }}" >> "$GITHUB_ENV"
