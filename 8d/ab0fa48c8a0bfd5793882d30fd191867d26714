@@ -1,0 +1,14 @@
+package.json
+  h_ea310c8a42b3f0 42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "8dab0fa48c8a0bfd5793882d30fd191867d26714",
+  "prompts": {},
+  "humans": {
+    "h_ea310c8a42b3f0": {
+      "author": "Misha Kav <misha.kav@gmail.com>"
+    }
+  }
+}
