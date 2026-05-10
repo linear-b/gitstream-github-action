@@ -1,0 +1,19 @@
+.github/workflows/bump-gitstream-core.yml
+  s_a8a7c1b50bb5f6::t_184aa09313a789 39-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "79797dc621697a2017d5a9d94225cb03c0d70983",
+  "prompts": {},
+  "sessions": {
+    "s_a8a7c1b50bb5f6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b4e5829d-b20f-4bda-8dae-0e346e5073bd",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Misha Kav <misha.kav@gmail.com>"
+    }
+  }
+}
