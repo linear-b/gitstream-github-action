@@ -39,7 +39,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@actions/core": "^2.0.3",
-    "@linearb/gitstream-core": "2.1.285"
+    "@linearb/gitstream-core": "2.1.288"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
