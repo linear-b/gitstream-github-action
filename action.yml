@@ -42,7 +42,7 @@ runs:
         cd gitstream && mkdir repo
 
     - name: Checkout base branch
-      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ inputs.base_ref }}
@@ -96,7 +96,7 @@ runs:
       run: cd gitstream && mkdir cm
 
     - name: Checkout cm repo
-      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true }}
       with:
         repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
@@ -105,7 +105,7 @@ runs:
         fetch-depth: 1
 
     - name: Checkout cm org
-      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmOrg == true }}
       with:
         repository: 'cm/cm'
