@@ -31,6 +31,73 @@ inputs:
 runs:
   using: composite
   steps:
+    # gitStream sends client_payload in one of three forms so that a PR whose context exceeds GitHub's
+    # 65,535-char input limit still runs: plain JSON, base64(gzip), or a small reference to a payload
+    # stashed server-side. The rules engine resolves all three on its own, but the steps below read
+    # fields out of the payload in YAML expressions, which are evaluated long before the engine starts —
+    # so resolve just those fields here. Must stay ahead of every step that consumes them.
+    # CLIENT_PAYLOAD itself is passed through untouched, keeping this step's outputs small.
+    - name: Resolve payload fields
+      id: payload-fields
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        PAYLOAD_ARG: ${{ inputs.client_payload }}
+      with:
+        script: |
+          const { gunzipSync } = require('zlib');
+          const PAYLOAD_FETCH_TIMEOUT_MS = 10000;
+          const OVERSIZED_PAYLOAD_REFERENCE = 'oversized-payload-reference';
+          const inflate = (value) => {
+            const buffer = Buffer.from(value, 'base64');
+            if (buffer.length < 2 || buffer[0] !== 0x1f || buffer[1] !== 0x8b) {
+              return null;
+            }
+            return gunzipSync(buffer).toString('utf8');
+          };
+
+          const parsePayload = (value) => {
+            const parsed = JSON.parse(value);
+            return typeof parsed === 'string' ? JSON.parse(parsed) : parsed;
+          };
+
+          const resolve = async (raw) => {
+            if (raw.includes(OVERSIZED_PAYLOAD_REFERENCE)) {
+              const reference = parsePayload(raw);
+              if (reference && reference.type === OVERSIZED_PAYLOAD_REFERENCE) {
+                const response = await fetch(reference.payloadUrl, {
+                  headers: { Authorization: `Bearer ${reference.resolverToken}` },
+                  signal: AbortSignal.timeout(PAYLOAD_FETCH_TIMEOUT_MS),
+                });
+                if (!response.ok) {
+                  throw new Error(`stashed payload fetch returned ${response.status}`);
+                }
+                const body = await response.text();
+                return { mode: 'reference', payload: parsePayload(inflate(body) ?? body) };
+              }
+            }
+            const inflated = inflate(raw);
+            if (inflated !== null) {
+              return { mode: 'compressed', payload: parsePayload(inflated) };
+            }
+            return { mode: 'plain', payload: parsePayload(raw) };
+          };
+
+          try {
+            const { mode, payload } = await resolve(process.env.PAYLOAD_ARG || '');
+            core.info(`client_payload mode=${mode}`);
+            const hasCmRepo = payload.hasCmRepo === true;
+            core.setOutput('github_token', payload.githubToken || '');
+            core.setOutput('url', payload.headHttpUrl || payload.repoUrl || '');
+            core.setOutput('has_cm_repo', String(hasCmRepo));
+            core.setOutput('cm_repository', hasCmRepo ? `${payload.owner}/${payload.cmRepo}` : '');
+            core.setOutput('cm_repo_ref', payload.cmRepoRef || '');
+            core.setOutput('has_cm_org', String(payload.hasCmOrg === true));
+            core.setOutput('cm_org_ref', payload.cmOrgRef || '');
+          } catch (err) {
+            core.error(`Failed resolving client payload: ${err}`);
+            process.exit(1);
+          }
+
     - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
       with:
         node-version: 20.12.2
@@ -47,7 +114,7 @@ runs:
         repository: ${{ inputs.full_repository }}
         ref: ${{ inputs.base_ref }}
         path: gitstream/repo/
-        token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
+        token: ${{ steps.payload-fields.outputs.github_token || github.token }}
 
     - name: Escape single quotes
       id: safe-strings
@@ -56,7 +123,7 @@ runs:
         BASE_REF_ARG: ${{ inputs.base_ref }}
         HEAD_REF_ARG: ${{ inputs.head_ref }}
         PAYLOAD_ARG: ${{ inputs.client_payload }}
-        URL_ARG: ${{ fromJSON(fromJSON(inputs.client_payload)).headHttpUrl || fromJSON(fromJSON(inputs.client_payload)).repoUrl }}
+        URL_ARG: ${{ steps.payload-fields.outputs.url }}
       with:
         script: |
           try {
@@ -97,19 +164,19 @@ runs:
 
     - name: Checkout cm repo
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true }}
+      if: ${{ steps.payload-fields.outputs.has_cm_repo == 'true' }}
       with:
-        repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
-        ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmRepoRef }}
+        repository: ${{ steps.payload-fields.outputs.cm_repository }}
+        ref: ${{ steps.payload-fields.outputs.cm_repo_ref }}
         path: gitstream/cm/
         fetch-depth: 1
 
     - name: Checkout cm org
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmOrg == true }}
+      if: ${{ steps.payload-fields.outputs.has_cm_org == 'true' }}
       with:
         repository: 'cm/cm'
-        ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmOrgRef }}
+        ref: ${{ steps.payload-fields.outputs.cm_org_ref }}
         path: gitstream/cm/
         fetch-depth: 1
 
