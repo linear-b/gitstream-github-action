@@ -86,10 +86,6 @@ runs:
             const { mode, payload } = await resolve(process.env.PAYLOAD_ARG || '');
             core.info(`client_payload mode=${mode}`);
 
-            // The installation token travels inside client_payload, and every later step that takes the
-            // payload as env logs it in plaintext in its own env dump. Registering it here — from the
-            // first step that has it in hand — masks those. This step's own dump is already written by
-            // the time the script runs, so one occurrence remains.
             if (payload.githubToken) {
               core.setSecret(payload.githubToken);
             }
