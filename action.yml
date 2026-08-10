@@ -44,14 +44,21 @@ runs:
           const { gunzipSync } = require('zlib');
           const PAYLOAD_FETCH_TIMEOUT_MS = 10000;
           const OVERSIZED_PAYLOAD_REFERENCE = 'oversized-payload-reference';
+          // Bounds a decompression bomb: gzip is asymmetric, so a ~66KB input can inflate to 50MB and
+          // exhaust the runner. The largest payload seen in production is ~1.4MB, so this leaves ample
+          // room while keeping the allocation finite.
+          const MAX_INFLATED_PAYLOAD_BYTES = 32 * 1024 * 1024;
           const inflate = (value) => {
             const buffer = Buffer.from(value, 'base64');
             if (buffer.length < 2 || buffer[0] !== 0x1f || buffer[1] !== 0x8b) {
               return null;
             }
             try {
-              return gunzipSync(buffer).toString('utf8');
+              return gunzipSync(buffer, { maxOutputLength: MAX_INFLATED_PAYLOAD_BYTES }).toString('utf8');
             } catch (err) {
+              if (err.code === 'ERR_BUFFER_TOO_LARGE') {
+                throw new Error(`payload inflates beyond ${MAX_INFLATED_PAYLOAD_BYTES} bytes; refusing to expand it`);
+              }
               throw new Error(`gzip decompression failed: ${err.message}`);
             }
           };
