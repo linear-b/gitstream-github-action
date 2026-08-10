@@ -39,6 +39,7 @@ runs:
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
         PAYLOAD_ARG: ${{ inputs.client_payload }}
+        RESOLVER_URL_ARG: ${{ inputs.resolver_url }}
       with:
         script: |
           const { gunzipSync } = require('zlib');
@@ -72,6 +73,14 @@ runs:
             if (raw.includes(OVERSIZED_PAYLOAD_REFERENCE)) {
               const reference = parsePayload(raw);
               if (reference && reference.type === OVERSIZED_PAYLOAD_REFERENCE) {
+                // The stash is served by the same host as the resolver, so require that origin rather
+                // than fetching whatever the payload names. Without this a crafted client_payload could
+                // aim the runner at an internal address, which matters most on self-hosted runners.
+                const expectedOrigin = new URL(process.env.RESOLVER_URL_ARG || '').origin;
+                const payloadOrigin = new URL(reference.payloadUrl).origin;
+                if (payloadOrigin !== expectedOrigin) {
+                  throw new Error(`refusing to fetch stashed payload from ${payloadOrigin}; expected ${expectedOrigin}`);
+                }
                 core.setSecret(reference.resolverToken);
                 const response = await fetch(reference.payloadUrl, {
                   headers: { Authorization: `Bearer ${reference.resolverToken}` },
