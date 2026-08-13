@@ -230,6 +230,22 @@ describe('run with an oversized-payload reference', () => {
     )
   })
 
+  it('names the offending URL when payloadUrl is not absolute', async () => {
+    const fetchMock = mockFetch({ ok: true, text: async () => '{}' })
+
+    const core = await runWith(
+      JSON.stringify({
+        ...reference,
+        payloadUrl: '/api/v1/gitstream/payload/k'
+      })
+    )
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(core.setFailed).toHaveBeenCalledWith(
+      expect.stringContaining('stashed payload URL is not absolute')
+    )
+  })
+
   it('refuses an origin other than the resolver', async () => {
     const fetchMock = mockFetch({ ok: true, text: async () => '{}' })
 
