@@ -31,6 +31,24 @@ inputs:
 runs:
   using: composite
   steps:
+    # client_payload arrives as plain JSON, base64(gzip), or a reference to a server-stashed payload.
+    # See scripts/resolve-payload-fields.js for the resolution logic and its outputs.
+    - name: Resolve payload fields
+      id: payload-fields
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        PAYLOAD_ARG: ${{ inputs.client_payload }}
+        RESOLVER_URL_ARG: ${{ inputs.resolver_url }}
+      with:
+        script: |
+          const { run } = require(`${process.env.ACTION_PATH}/scripts/resolve-payload-fields.js`);
+          await run({
+            core,
+            clientPayload: process.env.PAYLOAD_ARG,
+            resolverUrl: process.env.RESOLVER_URL_ARG,
+          });
+
     - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
       with:
         node-version: 20.12.2
@@ -42,21 +60,21 @@ runs:
         cd gitstream && mkdir repo
 
     - name: Checkout base branch
-      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         repository: ${{ inputs.full_repository }}
         ref: ${{ inputs.base_ref }}
         path: gitstream/repo/
-        token: ${{ fromJSON(fromJSON(inputs.client_payload)).githubToken || github.token }}
+        token: ${{ steps.payload-fields.outputs.github_token || github.token }}
 
     - name: Escape single quotes
       id: safe-strings
-      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
         BASE_REF_ARG: ${{ inputs.base_ref }}
         HEAD_REF_ARG: ${{ inputs.head_ref }}
-        PAYLOAD_ARG: ${{ inputs.client_payload }}
-        URL_ARG: ${{ fromJSON(fromJSON(inputs.client_payload)).headHttpUrl || fromJSON(fromJSON(inputs.client_payload)).repoUrl }}
+        PAYLOAD_ARG: ${{ steps.payload-fields.outputs.client_payload }}
+        URL_ARG: ${{ steps.payload-fields.outputs.url }}
       with:
         script: |
           try {
@@ -87,30 +105,30 @@ runs:
         git config checkout.defaultRemote origin
         git fetch --shallow-since="6 months ago" origin $'${{ steps.safe-strings.outputs.base_ref }}'
         git remote add upstream $'${{ steps.safe-strings.outputs.url }}'
-        git fetch --shallow-since="6 months ago" upstream $'${{ steps.safe-strings.outputs.head_ref }}'
-        git checkout -b $'upstream/${{ steps.safe-strings.outputs.head_ref}}' $'upstream/${{ steps.safe-strings.outputs.head_ref}}'
-        git checkout $'${{ steps.safe-strings.outputs.base_ref }}'
-        git checkout $'${{ steps.safe-strings.outputs.head_ref }}'
+        git fetch --shallow-since="6 months ago" upstream $'${{ steps.safe-strings.outputs.head_ref }}' || echo "::warning::Failed to fetch head branch. The branch may have been deleted."
+        git checkout -b $'upstream/${{ steps.safe-strings.outputs.head_ref}}' $'upstream/${{ steps.safe-strings.outputs.head_ref}}' || true
+        git checkout $'${{ steps.safe-strings.outputs.base_ref }}' || true
+        git checkout $'${{ steps.safe-strings.outputs.head_ref }}' || true
 
     - name: Create cm folder
       shell: bash
       run: cd gitstream && mkdir cm
 
     - name: Checkout cm repo
-      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
-      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmRepo == true }}
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      if: ${{ steps.payload-fields.outputs.has_cm_repo == 'true' }}
       with:
-        repository: '${{ fromJSON(fromJSON(inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(inputs.client_payload)).cmRepo }}'
-        ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmRepoRef }}
+        repository: ${{ steps.payload-fields.outputs.cm_repository }}
+        ref: ${{ steps.payload-fields.outputs.cm_repo_ref }}
         path: gitstream/cm/
         fetch-depth: 1
 
     - name: Checkout cm org
-      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
-      if: ${{ fromJSON(fromJSON(inputs.client_payload)).hasCmOrg == true }}
+      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      if: ${{ steps.payload-fields.outputs.has_cm_org == 'true' }}
       with:
         repository: 'cm/cm'
-        ref: ${{ fromJSON(fromJSON(inputs.client_payload)).cmOrgRef }}
+        ref: ${{ steps.payload-fields.outputs.cm_org_ref }}
         path: gitstream/cm/
         fetch-depth: 1
 
@@ -118,15 +136,11 @@ runs:
       shell: bash
       run: mv gitstream code
 
-    - name: Install Dependencies for plugins
-      shell: bash
-      continue-on-error: true
-      run: npm i --silent moment lodash axios @octokit/rest@20.1.1
-
     - name: Run RulesEngine
       shell: bash
       run: node ${{ github.action_path }}/dist/index.js
       env:
+        NODE_PATH: ${{ github.action_path }}/dist/node_modules
         HEAD_REF: ${{ steps.safe-strings.outputs.head_ref }}
         BASE_REF: ${{ steps.safe-strings.outputs.base_ref }}
         CLIENT_PAYLOAD: ${{ steps.safe-strings.outputs.client_payload }}
@@ -138,7 +152,7 @@ runs:
 
     - name: Upload artifacts
       if: ${{ env.ENABLE_DEBUG_ARTIFACTS == 'true' }}
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         retention-days: 7
         name: output

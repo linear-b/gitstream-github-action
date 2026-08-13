@@ -25,14 +25,20 @@ on:
         description: GitHub username to assign as reviewer
         required: false
 
+permissions: {}
+
 jobs:
   publish_pr:
     name: Publish PR
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           token: ${{ secrets.CI_USER_GIT_TOKEN }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
 
       - name: Set version to ENV
         run: |
