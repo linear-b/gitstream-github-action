@@ -217,6 +217,19 @@ describe('run with an oversized-payload reference', () => {
     expect(outputsOf(core).cm_repo_ref).toBe('main')
   })
 
+  it('fails loudly when the stash returns neither gzip nor JSON', async () => {
+    // The stash holds the payload, not the envelope, and its form depends on
+    // whether compression won: bare base64(gzip) if it did, raw JSON if not.
+    // Anything else must be an error rather than a fall-through.
+    mockFetch({ ok: true, text: async () => 'not-json-not-gzip' })
+
+    const core = await runWith(JSON.stringify(reference))
+
+    expect(core.setFailed).toHaveBeenCalledWith(
+      expect.stringContaining('Failed resolving client payload')
+    )
+  })
+
   it('refuses an origin other than the resolver', async () => {
     const fetchMock = mockFetch({ ok: true, text: async () => '{}' })
 
