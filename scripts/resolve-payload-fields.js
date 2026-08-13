@@ -14,6 +14,7 @@
 const { gunzipSync } = require('zlib')
 
 const OVERSIZED_PAYLOAD_REFERENCE = 'oversized-payload-reference'
+const COMPRESSED_PAYLOAD = 'compressed-payload'
 const PAYLOAD_FETCH_TIMEOUT_MS = 10000
 
 // 32MB
@@ -51,18 +52,18 @@ function parsePayload(value) {
 }
 
 /**
- * @returns {object | null} the stash reference, or null for a regular payload
+ * @returns {object | null} the parsed value, or null when `raw` is not JSON at
+ * all - the bare base64(gzip) form, which has no envelope around it
  */
-function readStashReference(raw) {
-  // Cheap pre-check so a regular payload is only parsed once, further down.
-  if (!raw.includes(OVERSIZED_PAYLOAD_REFERENCE)) {
+function tryParsePayload(raw) {
+  try {
+    const parsed = parsePayload(raw)
+    return parsed && typeof parsed === 'object' ? parsed : null
+  } catch {
     return null
   }
-  const parsed = parsePayload(raw)
-  return parsed && parsed.type === OVERSIZED_PAYLOAD_REFERENCE ? parsed : null
 }
 
-// Builds the stash URL on the resolver's own origin.
 function stashUrl(payloadUrl, resolverUrl) {
   if (!resolverUrl) {
     throw new Error(
@@ -70,7 +71,16 @@ function stashUrl(payloadUrl, resolverUrl) {
     )
   }
   const resolverOrigin = new URL(resolverUrl).origin
-  const requested = new URL(payloadUrl)
+  let requested
+  try {
+    // The trigger always sends an absolute URL; both it and resolver_url are
+    // built from the same base, so a relative one means that base was empty.
+    requested = new URL(payloadUrl)
+  } catch {
+    throw new Error(
+      `stashed payload URL is not absolute: ${payloadUrl} - the resolver's public API base is probably unset`
+    )
+  }
   if (requested.origin !== resolverOrigin) {
     throw new Error(
       `refusing to fetch stashed payload from ${requested.origin}; expected ${resolverOrigin}`
@@ -96,19 +106,27 @@ async function fetchStashedPayload(reference, resolverUrl, core) {
   return parsePayload(inflateIfGzipped(body) ?? body)
 }
 
-/**
- * @returns {Promise<{ mode: string, payload: object }>}
- */
 async function resolvePayload(raw, resolverUrl, core) {
-  const reference = readStashReference(raw)
-  if (reference) {
-    const payload = await fetchStashedPayload(reference, resolverUrl, core)
-    return { mode: 'reference', payload }
+  const parsed = tryParsePayload(raw)
+  if (parsed) {
+    if (parsed.type === OVERSIZED_PAYLOAD_REFERENCE) {
+      const payload = await fetchStashedPayload(parsed, resolverUrl, core)
+      return { mode: 'reference', payload }
+    }
+    if (parsed.type === COMPRESSED_PAYLOAD) {
+      const inflated = inflateIfGzipped(parsed.data || '')
+      if (inflated === null) {
+        throw new Error(`${COMPRESSED_PAYLOAD} envelope carries no gzip data`)
+      }
+      return { mode: 'compressed-envelope', payload: parsePayload(inflated) }
+    }
+    return { mode: 'plain', payload: parsed }
   }
   const inflated = inflateIfGzipped(raw)
   if (inflated !== null) {
     return { mode: 'compressed', payload: parsePayload(inflated) }
   }
+  // Not JSON and not gzip - let the JSON error describe what arrived.
   return { mode: 'plain', payload: parsePayload(raw) }
 }
 

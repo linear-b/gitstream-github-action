@@ -111,6 +111,42 @@ describe('run', () => {
     )
   })
 
+  it('inflates a wrapped compressed-payload envelope', async () => {
+    const envelope = {
+      type: 'compressed-payload',
+      data: gzipSync(JSON.stringify(payload)).toString('base64'),
+      pullRequestNumber: 123
+    }
+    const core = await runWith(JSON.stringify(JSON.stringify(envelope)))
+
+    expect(core.setFailed).not.toHaveBeenCalled()
+    expect(core.info).toHaveBeenCalledWith(
+      'client_payload mode=compressed-envelope'
+    )
+    expect(outputsOf(core).cm_repository).toBe('acme/cm-repo')
+  })
+
+  it('fails loudly when a compressed-payload envelope has no gzip data', async () => {
+    const core = await runWith(
+      JSON.stringify(
+        JSON.stringify({ type: 'compressed-payload', data: 'not-gzip' })
+      )
+    )
+
+    expect(core.setFailed).toHaveBeenCalledWith(
+      expect.stringContaining('carries no gzip data')
+    )
+  })
+
+  it('treats a raw payload carrying its own type as a raw payload', async () => {
+    const core = await runWith(JSON.stringify({ ...payload, type: 'push' }))
+
+    expect(core.setFailed).not.toHaveBeenCalled()
+    expect(core.info).toHaveBeenCalledWith('client_payload mode=plain')
+    expect(outputsOf(core).github_token).toBe('ghs_token')
+    expect(outputsOf(core).cm_repository).toBe('acme/cm-repo')
+  })
+
   it('fails on a payload that is not valid JSON', async () => {
     const core = await runWith('not json')
 
@@ -153,6 +189,20 @@ describe('run with an oversized-payload reference', () => {
     expect(outputsOf(core).cm_repository).toBe('acme/cm-repo')
   })
 
+  it('fetches from a double-encoded reference envelope', async () => {
+    const fetchMock = mockFetch({
+      ok: true,
+      text: async () => JSON.stringify(payload)
+    })
+
+    const core = await runWith(JSON.stringify(JSON.stringify(reference)))
+
+    expect(core.setFailed).not.toHaveBeenCalled()
+    expect(core.info).toHaveBeenCalledWith('client_payload mode=reference')
+    expect(fetchMock).toHaveBeenCalled()
+    expect(outputsOf(core).cm_repository).toBe('acme/cm-repo')
+  })
+
   it('inflates a stashed payload that is gzipped', async () => {
     mockFetch({
       ok: true,
@@ -163,6 +213,35 @@ describe('run with an oversized-payload reference', () => {
 
     expect(core.setFailed).not.toHaveBeenCalled()
     expect(outputsOf(core).cm_repo_ref).toBe('main')
+  })
+
+  it('fails loudly when the stash returns neither gzip nor JSON', async () => {
+    // The stash holds the payload, not the envelope, and its form depends on
+    // whether compression won: bare base64(gzip) if it did, raw JSON if not.
+    // Anything else must be an error rather than a fall-through.
+    mockFetch({ ok: true, text: async () => 'not-json-not-gzip' })
+
+    const core = await runWith(JSON.stringify(reference))
+
+    expect(core.setFailed).toHaveBeenCalledWith(
+      expect.stringContaining('Failed resolving client payload')
+    )
+  })
+
+  it('names the offending URL when payloadUrl is not absolute', async () => {
+    const fetchMock = mockFetch({ ok: true, text: async () => '{}' })
+
+    const core = await runWith(
+      JSON.stringify({
+        ...reference,
+        payloadUrl: '/api/v1/gitstream/payload/k'
+      })
+    )
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(core.setFailed).toHaveBeenCalledWith(
+      expect.stringContaining('stashed payload URL is not absolute')
+    )
   })
 
   it('refuses an origin other than the resolver', async () => {
