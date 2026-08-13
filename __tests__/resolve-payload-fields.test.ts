@@ -139,8 +139,6 @@ describe('run', () => {
   })
 
   it('treats a raw payload carrying its own type as a raw payload', async () => {
-    // Bitbucket builds the raw payload from the webhook context, which can
-    // carry an unrelated `type`. Only the two known values are envelopes.
     const core = await runWith(JSON.stringify({ ...payload, type: 'push' }))
 
     expect(core.setFailed).not.toHaveBeenCalled()

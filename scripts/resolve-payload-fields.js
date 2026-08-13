@@ -64,19 +64,6 @@ function tryParsePayload(raw) {
   }
 }
 
-/**
- * Builds the stash URL on the resolver's own origin.
- *
- * The host in `payloadUrl` is decorative and is discarded - always, not only
- * when it disagrees. Only the path and query are carried over, re-attached to
- * resolver_url, which comes from the workflow rather than the payload. That
- * makes this structurally immune to being redirected through this field, so
- * please do not "fix" it later by honouring the payload's host.
- *
- * The path is applied via the `pathname` setter rather than by resolving it as
- * a relative URL: relative resolution would let a `//host/...` path escape to
- * another origin.
- */
 function stashUrl(payloadUrl, resolverUrl) {
   if (!resolverUrl) {
     throw new Error(
@@ -119,21 +106,9 @@ async function fetchStashedPayload(reference, resolverUrl, core) {
   return parsePayload(inflateIfGzipped(body) ?? body)
 }
 
-/**
- * Resolves whichever shape the trigger sent. Both compressed forms are
- * permanent, not a migration step: GitHub wraps the payload in an envelope so
- * that `run-name`, which is evaluated before any step exists and so cannot be
- * rescued from here, still parses. Bitbucket has no `run-name` and keeps
- * sending the bare form.
- *
- * @returns {Promise<{ mode: string, payload: object }>}
- */
 async function resolvePayload(raw, resolverUrl, core) {
   const parsed = tryParsePayload(raw)
   if (parsed) {
-    // Switch on the *value* of `type`, never its presence: a raw payload may
-    // legitimately carry its own `type` (Bitbucket builds it from the webhook
-    // context), and must fall through to the raw branch below.
     if (parsed.type === OVERSIZED_PAYLOAD_REFERENCE) {
       const payload = await fetchStashedPayload(parsed, resolverUrl, core)
       return { mode: 'reference', payload }
