@@ -131,6 +131,25 @@ async function resolvePayload(raw, resolverUrl, core) {
 }
 
 /**
+ * @param {string} raw the `client_payload` input, verbatim
+ * @returns {string} the form gitstream-core already understands
+ */
+function normalizeForEngine(raw) {
+  const envelope = tryParsePayload(raw)
+  if (!envelope) {
+    // Bare base64(gzip), which core inflates on its own. Bitbucket sends this shape today.
+    return raw
+  }
+  if (envelope.type === COMPRESSED_PAYLOAD && envelope.data) {
+    return envelope.data
+  }
+  if (envelope.type === OVERSIZED_PAYLOAD_REFERENCE) {
+    return JSON.stringify(envelope)
+  }
+  return raw
+}
+
+/**
  * Maps a resolved payload to the step outputs. Output values are strings, so
  * booleans are stringified to be compared as `== 'true'` in step conditions.
  */
@@ -156,7 +175,10 @@ async function run({ core, clientPayload, resolverUrl }) {
     )
     core.info(`client_payload mode=${mode}`)
 
-    const outputs = toStepOutputs(payload)
+    const outputs = {
+      ...toStepOutputs(payload),
+      client_payload: normalizeForEngine(clientPayload || '')
+    }
 
     if (outputs.github_token) {
       core.setSecret(outputs.github_token)
@@ -171,5 +193,6 @@ async function run({ core, clientPayload, resolverUrl }) {
 
 module.exports = {
   run,
-  toStepOutputs
+  toStepOutputs,
+  normalizeForEngine
 }

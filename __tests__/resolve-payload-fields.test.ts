@@ -1,7 +1,11 @@
 import { gzipSync } from 'zlib'
 
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
-const { run, toStepOutputs } = require('../scripts/resolve-payload-fields.js')
+const {
+  run,
+  toStepOutputs,
+  normalizeForEngine
+} = require('../scripts/resolve-payload-fields.js')
 /* eslint-enable @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 
 const RESOLVER_URL = 'https://resolver.example.com/api'
@@ -313,5 +317,56 @@ describe('run with an oversized-payload reference', () => {
     expect(fetchMock).not.toHaveBeenCalled()
     expect(core.info).toHaveBeenCalledWith('client_payload mode=plain')
     expect(outputsOf(core).cm_repo_ref).toBe('oversized-payload-reference')
+  })
+})
+
+describe('normalizeForEngine', () => {
+  const blob = gzipSync(Buffer.from(JSON.stringify(payload))).toString('base64')
+  const reference = {
+    type: 'oversized-payload-reference',
+    payloadUrl: 'https://resolver.example.com/api/v1/gitstream/payload/key',
+    resolverToken: 'token',
+    pullRequestNumber: 7
+  }
+
+  it.each([
+    ['plain, double-encoded', JSON.stringify(JSON.stringify(payload))],
+    ['plain, single-encoded', JSON.stringify(payload)],
+    ['bare base64(gzip)', blob]
+  ])('passes %s through byte-identical', (_label, raw) => {
+    expect(normalizeForEngine(raw)).toBe(raw)
+  })
+
+  it('hands core the bare blob out of a compressed-payload envelope', () => {
+    const wrapped = JSON.stringify(
+      JSON.stringify({
+        type: 'compressed-payload',
+        data: blob,
+        pullRequestNumber: 7
+      })
+    )
+
+    expect(normalizeForEngine(wrapped)).toBe(blob)
+  })
+
+  it('hands core a single-encoded reference, which is the depth it parses', () => {
+    const wrapped = JSON.stringify(JSON.stringify(reference))
+    const normalized = normalizeForEngine(wrapped)
+
+    expect(JSON.parse(normalized)).toEqual(reference)
+  })
+
+  it('leaves a payload that merely carries a type field alone', () => {
+    const raw = JSON.stringify(JSON.stringify({ ...payload, type: 'push' }))
+
+    expect(normalizeForEngine(raw)).toBe(raw)
+  })
+
+  it('emits the normalized payload as a step output', async () => {
+    const core = await runWith(
+      JSON.stringify(JSON.stringify({ type: 'compressed-payload', data: blob }))
+    )
+
+    expect(outputsOf(core).client_payload).toBe(blob)
   })
 })
