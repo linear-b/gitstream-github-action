@@ -73,7 +73,7 @@ runs:
       env:
         BASE_REF_ARG: ${{ inputs.base_ref }}
         HEAD_REF_ARG: ${{ inputs.head_ref }}
-        PAYLOAD_ARG: ${{ inputs.client_payload }}
+        PAYLOAD_ARG: ${{ steps.payload-fields.outputs.client_payload }}
         URL_ARG: ${{ steps.payload-fields.outputs.url }}
       with:
         script: |
