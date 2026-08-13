@@ -35,6 +35,18 @@ runs:
     - name: Deprecation Notice
       shell: bash
       run: echo "::warning::gitstream-github-action@v1 is deprecated and will be disabled soon. Please upgrade to gitstream-github-action@v2. For more information, follow  https://github.com/linear-b/gitstream-github-action/releases/tag/v2"
+
+    # client_payload arrives as plain JSON, base64(gzip), or a reference to a server-stashed
+    # payload. See resolve-payload-fields.js for the resolution logic and its outputs.
+    - name: Resolve payload fields
+      id: payload-fields
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        PAYLOAD_ARG: ${{ github.event.inputs.client_payload }}
+        RESOLVER_URL_ARG: ${{ github.event.inputs.resolver_url }}
+      with:
+        script: |
+          await require('${{ github.action_path }}/resolve-payload-fields.js')(core);
     - name: Create GitStream folder
       shell: bash
       run: |
@@ -49,7 +61,7 @@ runs:
         repository: ${{ inputs.full_repository }}
         ref: ${{ github.event.inputs.base_ref }}
         path: "gitstream/repo/"
-        token: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).githubToken || github.token }}
+        token: ${{ steps.payload-fields.outputs.github_token || github.token }}
 
     - name: Escape single quotes
       id: safe-strings
@@ -57,8 +69,8 @@ runs:
       env:
         BASE_REF_ARG: ${{ github.event.inputs.base_ref }}
         HEAD_REF_ARG: ${{ github.event.inputs.head_ref }}
-        PAYLOAD_ARG: ${{ github.event.inputs.client_payload }}
-        URL_ARG: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).headHttpUrl || fromJSON(fromJSON(github.event.inputs.client_payload)).repoUrl }}
+        PAYLOAD_ARG: ${{ steps.payload-fields.outputs.client_payload }}
+        URL_ARG: ${{ steps.payload-fields.outputs.url }}
       with:
         script: |
           try {
@@ -100,10 +112,10 @@ runs:
 
     - name: Checkout cm repo
       uses: actions/checkout@v4
-      if: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).hasCmRepo == true }}
+      if: ${{ steps.payload-fields.outputs.has_cm_repo == 'true' }}
       with:
-        repository: "${{ fromJSON(fromJSON(github.event.inputs.client_payload)).owner }}/${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepo }}"
-        ref: ${{ fromJSON(fromJSON(github.event.inputs.client_payload)).cmRepoRef }}
+        repository: ${{ steps.payload-fields.outputs.cm_repository }}
+        ref: ${{ steps.payload-fields.outputs.cm_repo_ref }}
         path: "gitstream/cm/"
 
     - name: Get Docker cache key
