@@ -62,26 +62,25 @@ function readStashReference(raw) {
   return parsed && parsed.type === OVERSIZED_PAYLOAD_REFERENCE ? parsed : null
 }
 
-/**
- * The stash is served by the same host as the resolver, so require that origin
- * rather than fetching whatever the payload names. Without this a crafted
- * client_payload could aim the runner at an internal address, which matters
- * most on self-hosted runners.
- */
-function assertResolverOrigin(payloadUrl, resolverUrl) {
-  const expectedOrigin = new URL(resolverUrl || '').origin
-  const payloadOrigin = new URL(payloadUrl).origin
-  if (payloadOrigin !== expectedOrigin) {
+// Builds the stash URL on the resolver's own origin.
+function stashUrl(payloadUrl, resolverUrl) {
+  const resolverOrigin = new URL(resolverUrl || '').origin
+  const requested = new URL(payloadUrl)
+  if (requested.origin !== resolverOrigin) {
     throw new Error(
-      `refusing to fetch stashed payload from ${payloadOrigin}; expected ${expectedOrigin}`
+      `refusing to fetch stashed payload from ${requested.origin}; expected ${resolverOrigin}`
     )
   }
+  const url = new URL(resolverOrigin)
+  url.pathname = requested.pathname
+  url.search = requested.search
+  return url
 }
 
 async function fetchStashedPayload(reference, resolverUrl, core) {
-  assertResolverOrigin(reference.payloadUrl, resolverUrl)
+  const url = stashUrl(reference.payloadUrl, resolverUrl)
   core.setSecret(reference.resolverToken)
-  const response = await fetch(reference.payloadUrl, {
+  const response = await fetch(url, {
     headers: { Authorization: `Bearer ${reference.resolverToken}` },
     signal: AbortSignal.timeout(PAYLOAD_FETCH_TIMEOUT_MS)
   })

@@ -145,7 +145,7 @@ describe('run with an oversized-payload reference', () => {
     expect(core.info).toHaveBeenCalledWith('client_payload mode=reference')
     expect(core.setSecret).toHaveBeenCalledWith('resolver_token')
     expect(fetchMock).toHaveBeenCalledWith(
-      reference.payloadUrl,
+      new URL(reference.payloadUrl),
       expect.objectContaining({
         headers: { Authorization: 'Bearer resolver_token' }
       })
@@ -179,6 +179,23 @@ describe('run with an oversized-payload reference', () => {
     expect(core.setFailed).toHaveBeenCalledWith(
       expect.stringContaining('refusing to fetch stashed payload')
     )
+  })
+
+  it('sends the request to the resolver host, not one named by the path', async () => {
+    const fetchMock = mockFetch({
+      ok: true,
+      text: async () => JSON.stringify(payload)
+    })
+
+    await runWith(
+      JSON.stringify({
+        ...reference,
+        payloadUrl: 'https://resolver.example.com//evil.example.com/x'
+      })
+    )
+
+    const [requested] = fetchMock.mock.calls[0]
+    expect(requested.host).toBe('resolver.example.com')
   })
 
   it('fails when the stash responds with an error', async () => {
