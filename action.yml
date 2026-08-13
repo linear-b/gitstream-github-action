@@ -40,7 +40,7 @@ runs:
     # payload. See resolve-payload-fields.js for the resolution logic and its outputs.
     - name: Resolve payload fields
       id: payload-fields
-      uses: actions/github-script@v7
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
         PAYLOAD_ARG: ${{ github.event.inputs.client_payload }}
         RESOLVER_URL_ARG: ${{ github.event.inputs.resolver_url }}
@@ -69,8 +69,6 @@ runs:
       env:
         BASE_REF_ARG: ${{ github.event.inputs.base_ref }}
         HEAD_REF_ARG: ${{ github.event.inputs.head_ref }}
-        # Normalized rather than the raw input: the trigger double-encodes every tier so `run-name`
-        # can parse it, and the engine reads the same value expecting its own shapes.
         PAYLOAD_ARG: ${{ steps.payload-fields.outputs.client_payload }}
         URL_ARG: ${{ steps.payload-fields.outputs.url }}
       with:

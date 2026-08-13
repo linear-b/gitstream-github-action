@@ -157,17 +157,6 @@ async function resolvePayload(raw, resolverUrl, core) {
  * in step conditions.
  */
 /**
- * What the docker rules engine receives as CLIENT_PAYLOAD.
- *
- * Two consumers read the same dispatch input and need different shapes. The workflow's `run-name` is
- * evaluated before any step exists, and the template we publish does
- * `fromJSON(fromJSON(client_payload))`, so the trigger double-encodes every tier to keep that
- * resolving to an object. gitstream-core resolves the payload itself and expects the shapes it has
- * always taken: one JSON.parse for the reference, gzip magic bytes for the compressed form. Stripping
- * the outer layer here is what lets both read the same dispatch.
- *
- * Only the outer layer comes off - the payload a reference points at is never fetched here.
- *
  * @param {string} raw the `client_payload` input, verbatim
  * @returns {string} the form gitstream-core already understands
  */
