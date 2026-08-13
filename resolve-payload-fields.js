@@ -156,6 +156,36 @@ async function resolvePayload(raw, resolverUrl, core) {
  * values are strings, so booleans are stringified to be compared as `== 'true'`
  * in step conditions.
  */
+/**
+ * What the docker rules engine receives as CLIENT_PAYLOAD.
+ *
+ * Two consumers read the same dispatch input and need different shapes. The workflow's `run-name` is
+ * evaluated before any step exists, and the template we publish does
+ * `fromJSON(fromJSON(client_payload))`, so the trigger double-encodes every tier to keep that
+ * resolving to an object. gitstream-core resolves the payload itself and expects the shapes it has
+ * always taken: one JSON.parse for the reference, gzip magic bytes for the compressed form. Stripping
+ * the outer layer here is what lets both read the same dispatch.
+ *
+ * Only the outer layer comes off - the payload a reference points at is never fetched here.
+ *
+ * @param {string} raw the `client_payload` input, verbatim
+ * @returns {string} the form gitstream-core already understands
+ */
+function normalizeForEngine(raw) {
+  const envelope = tryParsePayload(raw);
+  if (!envelope) {
+    // Bare base64(gzip), which the engine inflates on its own.
+    return raw;
+  }
+  if (envelope.type === COMPRESSED_PAYLOAD && envelope.data) {
+    return envelope.data;
+  }
+  if (envelope.type === OVERSIZED_PAYLOAD_REFERENCE) {
+    return JSON.stringify(envelope);
+  }
+  return raw;
+}
+
 function toStepOutputs(payload) {
   const hasCmRepo = payload.hasCmRepo === true;
   return {
@@ -178,7 +208,10 @@ module.exports = async core => {
     );
     core.info(`client_payload mode=${mode}`);
 
-    const outputs = toStepOutputs(payload);
+    const outputs = {
+      ...toStepOutputs(payload),
+      client_payload: normalizeForEngine(PAYLOAD_ARG || ''),
+    };
     // The installation token rides inside client_payload, so mask it before it
     // reaches an output or a later step's env dump.
     if (outputs.github_token) {
@@ -193,3 +226,4 @@ module.exports = async core => {
 };
 
 module.exports.toStepOutputs = toStepOutputs;
+module.exports.normalizeForEngine = normalizeForEngine;

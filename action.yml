@@ -69,7 +69,9 @@ runs:
       env:
         BASE_REF_ARG: ${{ github.event.inputs.base_ref }}
         HEAD_REF_ARG: ${{ github.event.inputs.head_ref }}
-        PAYLOAD_ARG: ${{ github.event.inputs.client_payload }}
+        # Normalized rather than the raw input: the trigger double-encodes every tier so `run-name`
+        # can parse it, and the engine reads the same value expecting its own shapes.
+        PAYLOAD_ARG: ${{ steps.payload-fields.outputs.client_payload }}
         URL_ARG: ${{ steps.payload-fields.outputs.url }}
       with:
         script: |
