@@ -152,11 +152,6 @@ async function resolvePayload(raw, resolverUrl, core) {
 }
 
 /**
- * Maps a resolved payload to the step outputs v1's action.yml consumes. Output
- * values are strings, so booleans are stringified to be compared as `== 'true'`
- * in step conditions.
- */
-/**
  * @param {string} raw the `client_payload` input, verbatim
  * @returns {string} the form gitstream-core already understands
  */
@@ -175,6 +170,11 @@ function normalizeForEngine(raw) {
   return raw;
 }
 
+/**
+ * Maps a resolved payload to the step outputs v1's action.yml consumes. Output
+ * values are strings, so booleans are stringified to be compared as `== 'true'`
+ * in step conditions.
+ */
 function toStepOutputs(payload) {
   const hasCmRepo = payload.hasCmRepo === true;
   return {
