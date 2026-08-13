@@ -64,7 +64,12 @@ function readStashReference(raw) {
 
 // Builds the stash URL on the resolver's own origin.
 function stashUrl(payloadUrl, resolverUrl) {
-  const resolverOrigin = new URL(resolverUrl || '').origin
+  if (!resolverUrl) {
+    throw new Error(
+      'resolver_url is not set; cannot validate the stashed payload origin'
+    )
+  }
+  const resolverOrigin = new URL(resolverUrl).origin
   const requested = new URL(payloadUrl)
   if (requested.origin !== resolverOrigin) {
     throw new Error(

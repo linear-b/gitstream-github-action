@@ -198,6 +198,22 @@ describe('run with an oversized-payload reference', () => {
     expect(requested.host).toBe('resolver.example.com')
   })
 
+  it('fails clearly when resolver_url is not set', async () => {
+    const fetchMock = mockFetch({ ok: true, text: async () => '{}' })
+    const core = createCore()
+
+    await run({
+      core,
+      clientPayload: JSON.stringify(reference),
+      resolverUrl: ''
+    })
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(core.setFailed).toHaveBeenCalledWith(
+      expect.stringContaining('resolver_url is not set')
+    )
+  })
+
   it('fails when the stash responds with an error', async () => {
     mockFetch({ ok: false, status: 404 })
 
