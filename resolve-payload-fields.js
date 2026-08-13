@@ -64,11 +64,16 @@ function tryParsePayload(raw) {
  * Builds the stash URL on the resolver's own origin.
  *
  * The reference names a URL to fetch, but it arrives inside client_payload, so
- * that URL is attacker-influenced. Take only its path and query and re-attach
- * them to resolver_url, so the host that reaches the network comes from the
- * action's own input and cannot be steered at an internal address. The path is
- * applied via the `pathname` setter: resolving it as a relative URL would let a
- * `//host/...` path escape to another origin.
+ * that URL is attacker-influenced. The host in `payloadUrl` is decorative and
+ * is discarded - always, not only when it disagrees. Only the path and query
+ * are carried over, re-attached to resolver_url, which comes from the workflow
+ * rather than the payload. That makes this structurally immune to being
+ * redirected through this field, so please do not "fix" it later by honouring
+ * the payload's host.
+ *
+ * The path is applied via the `pathname` setter rather than by resolving it as
+ * a relative URL: relative resolution would let a `//host/...` path escape to
+ * another origin.
  */
 function stashUrl(payloadUrl, resolverUrl) {
   if (!resolverUrl) {
@@ -77,7 +82,16 @@ function stashUrl(payloadUrl, resolverUrl) {
     );
   }
   const resolverOrigin = new URL(resolverUrl).origin;
-  const requested = new URL(payloadUrl);
+  let requested;
+  try {
+    // The trigger always sends an absolute URL; both it and resolver_url are
+    // built from the same base, so a relative one means that base was empty.
+    requested = new URL(payloadUrl);
+  } catch {
+    throw new Error(
+      `stashed payload URL is not absolute: ${payloadUrl} - the resolver's public API base is probably unset`,
+    );
+  }
   if (requested.origin !== resolverOrigin) {
     throw new Error(
       `refusing to fetch stashed payload from ${requested.origin}; expected ${resolverOrigin}`,
