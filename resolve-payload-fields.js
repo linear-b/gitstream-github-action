@@ -16,6 +16,7 @@
 const { gunzipSync } = require('zlib');
 
 const OVERSIZED_PAYLOAD_REFERENCE = 'oversized-payload-reference';
+const COMPRESSED_PAYLOAD = 'compressed-payload';
 const PAYLOAD_FETCH_TIMEOUT_MS = 10000;
 
 // Bounds a decompression bomb: gzip is asymmetric, so a small input can inflate
@@ -48,13 +49,15 @@ function parsePayload(value) {
   return typeof parsed === 'string' ? JSON.parse(parsed) : parsed;
 }
 
-function readStashReference(raw) {
-  // Cheap pre-check so a regular payload is only parsed once, further down.
-  if (!raw.includes(OVERSIZED_PAYLOAD_REFERENCE)) {
+// Returns the parsed value, or null when `raw` is not JSON at all - the bare
+// base64(gzip) form, which has no envelope around it.
+function tryParsePayload(raw) {
+  try {
+    const parsed = parsePayload(raw);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
     return null;
   }
-  const parsed = parsePayload(raw);
-  return parsed && parsed.type === OVERSIZED_PAYLOAD_REFERENCE ? parsed : null;
 }
 
 /**
@@ -100,16 +103,37 @@ async function fetchStashedPayload(reference, resolverUrl, core) {
   return parsePayload(inflateIfGzipped(body) ?? body);
 }
 
+/**
+ * Resolves whichever shape the trigger sent. Both compressed forms are
+ * permanent, not a migration step: GitHub wraps the payload in an envelope so
+ * that `run-name`, which is evaluated before any step exists and so cannot be
+ * rescued from here, still parses. Bitbucket has no `run-name` and keeps
+ * sending the bare form.
+ */
 async function resolvePayload(raw, resolverUrl, core) {
-  const reference = readStashReference(raw);
-  if (reference) {
-    const payload = await fetchStashedPayload(reference, resolverUrl, core);
-    return { mode: 'reference', payload };
+  const parsed = tryParsePayload(raw);
+  if (parsed) {
+    // Switch on the *value* of `type`, never its presence: a raw payload may
+    // legitimately carry its own `type` (Bitbucket builds it from the webhook
+    // context), and must fall through to the raw branch below.
+    if (parsed.type === OVERSIZED_PAYLOAD_REFERENCE) {
+      const payload = await fetchStashedPayload(parsed, resolverUrl, core);
+      return { mode: 'reference', payload };
+    }
+    if (parsed.type === COMPRESSED_PAYLOAD) {
+      const inflated = inflateIfGzipped(parsed.data || '');
+      if (inflated === null) {
+        throw new Error(`${COMPRESSED_PAYLOAD} envelope carries no gzip data`);
+      }
+      return { mode: 'compressed-envelope', payload: parsePayload(inflated) };
+    }
+    return { mode: 'plain', payload: parsed };
   }
   const inflated = inflateIfGzipped(raw);
   if (inflated !== null) {
     return { mode: 'compressed', payload: parsePayload(inflated) };
   }
+  // Not JSON and not gzip - let the JSON error describe what arrived.
   return { mode: 'plain', payload: parsePayload(raw) };
 }
 
