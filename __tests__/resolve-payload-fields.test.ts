@@ -111,6 +111,44 @@ describe('run', () => {
     )
   })
 
+  it('inflates a wrapped compressed-payload envelope', async () => {
+    const envelope = {
+      type: 'compressed-payload',
+      data: gzipSync(JSON.stringify(payload)).toString('base64'),
+      pullRequestNumber: 123
+    }
+    const core = await runWith(JSON.stringify(JSON.stringify(envelope)))
+
+    expect(core.setFailed).not.toHaveBeenCalled()
+    expect(core.info).toHaveBeenCalledWith(
+      'client_payload mode=compressed-envelope'
+    )
+    expect(outputsOf(core).cm_repository).toBe('acme/cm-repo')
+  })
+
+  it('fails loudly when a compressed-payload envelope has no gzip data', async () => {
+    const core = await runWith(
+      JSON.stringify(
+        JSON.stringify({ type: 'compressed-payload', data: 'not-gzip' })
+      )
+    )
+
+    expect(core.setFailed).toHaveBeenCalledWith(
+      expect.stringContaining('carries no gzip data')
+    )
+  })
+
+  it('treats a raw payload carrying its own type as a raw payload', async () => {
+    // Bitbucket builds the raw payload from the webhook context, which can
+    // carry an unrelated `type`. Only the two known values are envelopes.
+    const core = await runWith(JSON.stringify({ ...payload, type: 'push' }))
+
+    expect(core.setFailed).not.toHaveBeenCalled()
+    expect(core.info).toHaveBeenCalledWith('client_payload mode=plain')
+    expect(outputsOf(core).github_token).toBe('ghs_token')
+    expect(outputsOf(core).cm_repository).toBe('acme/cm-repo')
+  })
+
   it('fails on a payload that is not valid JSON', async () => {
     const core = await runWith('not json')
 
@@ -150,6 +188,20 @@ describe('run with an oversized-payload reference', () => {
         headers: { Authorization: 'Bearer resolver_token' }
       })
     )
+    expect(outputsOf(core).cm_repository).toBe('acme/cm-repo')
+  })
+
+  it('fetches from a double-encoded reference envelope', async () => {
+    const fetchMock = mockFetch({
+      ok: true,
+      text: async () => JSON.stringify(payload)
+    })
+
+    const core = await runWith(JSON.stringify(JSON.stringify(reference)))
+
+    expect(core.setFailed).not.toHaveBeenCalled()
+    expect(core.info).toHaveBeenCalledWith('client_payload mode=reference')
+    expect(fetchMock).toHaveBeenCalled()
     expect(outputsOf(core).cm_repository).toBe('acme/cm-repo')
   })
 
