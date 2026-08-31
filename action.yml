@@ -104,7 +104,12 @@ runs:
         git config checkout.defaultRemote origin
         git fetch --shallow-since="6 months ago" origin $'${{ steps.safe-strings.outputs.base_ref }}'
         git remote add upstream $'${{ steps.safe-strings.outputs.url }}'
-        git fetch --shallow-since="6 months ago" upstream $'${{ steps.safe-strings.outputs.head_ref }}' || echo "::warning::Failed to fetch head branch. The branch may have been deleted."
+        # GitHub publishes every PR head under the base repo's own refs/pull/*, so a
+        # fork head needs no access to the fork. Falls back to the head remote when
+        # the PR number is absent (non-PR events).
+        git fetch --shallow-since="6 months ago" origin $'refs/pull/${{ steps.payload-fields.outputs.pull_request_number }}/head:refs/remotes/upstream/${{ steps.safe-strings.outputs.head_ref }}' \
+          || git fetch --shallow-since="6 months ago" upstream $'${{ steps.safe-strings.outputs.head_ref }}' \
+          || echo "::warning::Failed to fetch head branch. The branch may have been deleted."
         git checkout -b $'upstream/${{ steps.safe-strings.outputs.head_ref}}' $'upstream/${{ steps.safe-strings.outputs.head_ref}}' || true
         git checkout $'${{ steps.safe-strings.outputs.base_ref }}' || true
         git checkout $'${{ steps.safe-strings.outputs.head_ref }}' || true

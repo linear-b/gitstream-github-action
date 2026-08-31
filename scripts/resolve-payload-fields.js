@@ -158,6 +158,9 @@ function toStepOutputs(payload) {
   return {
     github_token: payload.githubToken || '',
     url: payload.headHttpUrl || payload.repoUrl || '',
+    // Coerced so a missing or non-numeric value yields '', which fails the
+    // refs/pull fetch fast and falls back to fetching the head remote directly.
+    pull_request_number: String(Number(payload.pullRequestNumber) || ''),
     has_cm_repo: String(hasCmRepo),
     cm_repository: hasCmRepo ? `${payload.owner}/${payload.cmRepo}` : '',
     cm_repo_ref: payload.cmRepoRef || '',
