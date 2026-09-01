@@ -14,6 +14,7 @@ const payload = {
   githubToken: 'ghs_token',
   headHttpUrl: 'https://github.com/acme/repo.git',
   repoUrl: 'https://github.com/acme/other.git',
+  pullRequestNumber: 269,
   owner: 'acme',
   hasCmRepo: true,
   cmRepo: 'cm-repo',
@@ -50,6 +51,7 @@ describe('toStepOutputs', () => {
     expect(toStepOutputs(payload)).toEqual({
       github_token: 'ghs_token',
       url: 'https://github.com/acme/repo.git',
+      pull_request_number: '269',
       has_cm_repo: 'true',
       cm_repository: 'acme/cm-repo',
       cm_repo_ref: 'main',
@@ -58,12 +60,22 @@ describe('toStepOutputs', () => {
     })
   })
 
+  it.each([1.2, -1, 0, Infinity, 'abc'])(
+    'blanks a pull request number that is not a positive integer: %p',
+    pullRequestNumber => {
+      expect(
+        toStepOutputs({ ...payload, pullRequestNumber }).pull_request_number
+      ).toBe('')
+    }
+  )
+
   it('falls back to repoUrl and blanks the cm repo when absent', () => {
     expect(
       toStepOutputs({ repoUrl: 'https://github.com/acme/other.git' })
     ).toEqual({
       github_token: '',
       url: 'https://github.com/acme/other.git',
+      pull_request_number: '',
       has_cm_repo: 'false',
       cm_repository: '',
       cm_repo_ref: '',

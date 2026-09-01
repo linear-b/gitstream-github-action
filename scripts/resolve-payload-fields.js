@@ -155,9 +155,13 @@ function normalizeForEngine(raw) {
  */
 function toStepOutputs(payload) {
   const hasCmRepo = payload.hasCmRepo === true
+  const prNumber = Number(payload.pullRequestNumber)
+  // A positive integer or '': spliced into the fetch refspec without the safe-strings escaping step.
+  const isPrNumber = Number.isInteger(prNumber) && prNumber > 0
   return {
     github_token: payload.githubToken || '',
     url: payload.headHttpUrl || payload.repoUrl || '',
+    pull_request_number: isPrNumber ? String(prNumber) : '',
     has_cm_repo: String(hasCmRepo),
     cm_repository: hasCmRepo ? `${payload.owner}/${payload.cmRepo}` : '',
     cm_repo_ref: payload.cmRepoRef || '',
