@@ -60,6 +60,15 @@ describe('toStepOutputs', () => {
     })
   })
 
+  it.each([1.2, -1, 0, Infinity, 'abc'])(
+    'blanks a pull request number that is not a positive integer: %p',
+    pullRequestNumber => {
+      expect(
+        toStepOutputs({ ...payload, pullRequestNumber }).pull_request_number
+      ).toBe('')
+    }
+  )
+
   it('falls back to repoUrl and blanks the cm repo when absent', () => {
     expect(
       toStepOutputs({ repoUrl: 'https://github.com/acme/other.git' })
