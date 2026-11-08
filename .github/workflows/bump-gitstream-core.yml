@@ -32,9 +32,13 @@ jobs:
     name: Publish PR
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           token: ${{ secrets.CI_USER_GIT_TOKEN }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
 
       - name: Set version to ENV
         run: |

@@ -1,7 +1,3 @@
-interface RawAxiosHeaders {
-  [key: string]: axios.AxiosHeaderValue;
-}
-
 type MethodsHeaders = Partial<
   {
     [Key in axios.Method as Lowercase<Key>]: AxiosHeaders;
@@ -20,7 +16,8 @@ type CommonRequestHeadersList =
   | 'Content-Length'
   | 'User-Agent'
   | 'Content-Encoding'
-  | 'Authorization';
+  | 'Authorization'
+  | 'Location';
 
 type ContentType =
   | axios.AxiosHeaderValue
@@ -38,10 +35,12 @@ type CommonResponseHeadersList =
   | 'Cache-Control'
   | 'Content-Encoding';
 
+type CommonResponseHeaderKey = CommonResponseHeadersList | Lowercase<CommonResponseHeadersList>;
+
 type BrowserProgressEvent = any;
 
 declare class AxiosHeaders {
-  constructor(headers?: RawAxiosHeaders | AxiosHeaders | string);
+  constructor(headers?: axios.RawAxiosHeaders | AxiosHeaders | string);
 
   [key: string]: any;
 
@@ -50,7 +49,8 @@ declare class AxiosHeaders {
     value?: axios.AxiosHeaderValue,
     rewrite?: boolean | AxiosHeaderMatcher
   ): AxiosHeaders;
-  set(headers?: RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
+  set(headers?: axios.RawAxiosHeaders | AxiosHeaders | string, rewrite?: boolean): AxiosHeaders;
+  set(headers?: Iterable<[string, axios.AxiosHeaderValue]>, rewrite?: boolean): AxiosHeaders;
 
   get(headerName: string, parser: RegExp): RegExpExecArray | null;
   get(headerName: string, matcher?: true | AxiosHeaderParser): axios.AxiosHeaderValue;
@@ -64,17 +64,19 @@ declare class AxiosHeaders {
   normalize(format: boolean): AxiosHeaders;
 
   concat(
-    ...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>
+    ...targets: Array<AxiosHeaders | axios.RawAxiosHeaders | string | undefined | null>
   ): AxiosHeaders;
 
-  toJSON(asStrings?: boolean): RawAxiosHeaders;
+  toJSON(asStrings: true): Record<string, string>;
+  toJSON(asStrings?: false): Record<string, string | string[]>;
+  toJSON(asStrings?: boolean): Record<string, string | string[]>;
 
-  static from(thing?: AxiosHeaders | RawAxiosHeaders | string): AxiosHeaders;
+  static from(thing?: AxiosHeaders | axios.RawAxiosHeaders | string): AxiosHeaders;
 
   static accessor(header: string | string[]): AxiosHeaders;
 
   static concat(
-    ...targets: Array<AxiosHeaders | RawAxiosHeaders | string | undefined | null>
+    ...targets: Array<AxiosHeaders | axios.RawAxiosHeaders | string | undefined | null>
   ): AxiosHeaders;
 
   setContentType(value: ContentType, rewrite?: boolean | AxiosHeaderMatcher): AxiosHeaders;
@@ -118,6 +120,8 @@ declare class AxiosHeaders {
 
   getSetCookie(): string[];
 
+  toString(): string;
+
   [Symbol.iterator](): IterableIterator<[string, axios.AxiosHeaderValue]>;
 }
 
@@ -157,11 +161,17 @@ declare class AxiosError<T = unknown, D = any> extends Error {
   static readonly ERR_NOT_SUPPORT = 'ERR_NOT_SUPPORT';
   static readonly ERR_INVALID_URL = 'ERR_INVALID_URL';
   static readonly ERR_CANCELED = 'ERR_CANCELED';
+  static readonly ERR_FORM_DATA_DEPTH_EXCEEDED = 'ERR_FORM_DATA_DEPTH_EXCEEDED';
   static readonly ECONNABORTED = 'ECONNABORTED';
+  static readonly ECONNREFUSED = 'ECONNREFUSED';
   static readonly ETIMEDOUT = 'ETIMEDOUT';
 }
 
-declare class CanceledError<T> extends AxiosError<T> {}
+declare class CanceledError<T> extends AxiosError<T> {
+  constructor(message?: string, config?: axios.InternalAxiosRequestConfig, request?: any);
+  readonly name: 'CanceledError';
+  __CANCEL__?: boolean;
+}
 
 declare class Axios {
   constructor(config?: axios.AxiosRequestConfig);
@@ -216,6 +226,11 @@ declare class Axios {
     config?: axios.AxiosRequestConfig<D>
   ): Promise<R>;
   patchForm<T = any, R = axios.AxiosResponse<T>, D = any>(
+    url: string,
+    data?: D,
+    config?: axios.AxiosRequestConfig<D>
+  ): Promise<R>;
+  query<T = any, R = axios.AxiosResponse<T>, D = any>(
     url: string,
     data?: D,
     config?: axios.AxiosRequestConfig<D>
@@ -286,12 +301,22 @@ declare enum HttpStatusCode {
   LoopDetected = 508,
   NotExtended = 510,
   NetworkAuthenticationRequired = 511,
+  WebServerIsDown = 521,
+  ConnectionTimedOut = 522,
+  OriginIsUnreachable = 523,
+  TimeoutOccurred = 524,
+  SslHandshakeFailed = 525,
+  InvalidSslCertificate = 526,
 }
 
 type InternalAxiosError<T = unknown, D = any> = AxiosError<T, D>;
 
 declare namespace axios {
   type AxiosError<T = unknown, D = any> = InternalAxiosError<T, D>;
+
+  interface RawAxiosHeaders {
+    [key: string]: AxiosHeaderValue;
+  }
 
   type RawAxiosRequestHeaders = Partial<
     RawAxiosHeaders & {
@@ -306,7 +331,7 @@ declare namespace axios {
   type AxiosHeaderValue = AxiosHeaders | string | string[] | number | boolean | null;
 
   type RawCommonResponseHeaders = {
-    [Key in CommonResponseHeadersList]: AxiosHeaderValue;
+    [Key in CommonResponseHeaderKey]: AxiosHeaderValue;
   } & {
     'set-cookie': string[];
   };
@@ -344,61 +369,46 @@ declare namespace axios {
     protocol?: string;
   }
 
-  type Method =
-    | 'get'
+  type UppercaseMethod =
     | 'GET'
-    | 'delete'
     | 'DELETE'
-    | 'head'
     | 'HEAD'
-    | 'options'
     | 'OPTIONS'
-    | 'post'
     | 'POST'
-    | 'put'
     | 'PUT'
-    | 'patch'
     | 'PATCH'
-    | 'purge'
     | 'PURGE'
-    | 'link'
     | 'LINK'
-    | 'unlink'
-    | 'UNLINK';
+    | 'UNLINK'
+    | 'QUERY';
+
+  type Method = (UppercaseMethod | Lowercase<UppercaseMethod>) & {};
 
   type ResponseType = 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | 'formdata';
 
-  type responseEncoding =
-    | 'ascii'
+  type UppercaseResponseEncoding =
     | 'ASCII'
-    | 'ansi'
     | 'ANSI'
-    | 'binary'
     | 'BINARY'
-    | 'base64'
     | 'BASE64'
-    | 'base64url'
     | 'BASE64URL'
-    | 'hex'
     | 'HEX'
-    | 'latin1'
     | 'LATIN1'
-    | 'ucs-2'
     | 'UCS-2'
-    | 'ucs2'
     | 'UCS2'
-    | 'utf-8'
     | 'UTF-8'
-    | 'utf8'
     | 'UTF8'
-    | 'utf16le'
     | 'UTF16LE';
+
+  type responseEncoding = (UppercaseResponseEncoding | Lowercase<UppercaseResponseEncoding>) & {};
 
   interface TransitionalOptions {
     silentJSONParsing?: boolean;
     forcedJSONParsing?: boolean;
     clarifyTimeoutError?: boolean;
     legacyInterceptorReqResOrdering?: boolean;
+    advertiseZstdAcceptEncoding?: boolean;
+    validateStatusUndefinedResolves?: boolean;
   }
 
   interface GenericAbortSignal {
@@ -429,6 +439,8 @@ declare namespace axios {
     dots?: boolean;
     metaTokens?: boolean;
     indexes?: boolean | null;
+    maxDepth?: number;
+    Blob?: { new (...args: any[]): any };
   }
 
   // tslint:disable-next-line
@@ -508,14 +520,16 @@ declare namespace axios {
     maxRate?: number | [MaxUploadRate, MaxDownloadRate];
     beforeRedirect?: (
       options: Record<string, any>,
-      responseDetails: { headers: Record<string, string>; statusCode: HttpStatusCode }
+      responseDetails: { headers: Record<string, string>; statusCode: HttpStatusCode },
+      requestDetails: { headers: Record<string, string>; url: string; method: string },
     ) => void;
     socketPath?: string | null;
+    allowedSocketPaths?: string | string[] | null;
     transport?: any;
     httpAgent?: any;
     httpsAgent?: any;
     proxy?: AxiosProxyConfig | false;
-    cancelToken?: CancelToken;
+    cancelToken?: CancelToken | undefined;
     decompress?: boolean;
     transitional?: TransitionalOptions;
     signal?: GenericAbortSignal;
@@ -549,6 +563,7 @@ declare namespace axios {
           | LookupAddress
         >);
     withXSRFToken?: boolean | ((config: InternalAxiosRequestConfig) => boolean | undefined);
+    parseReviver?: (this: any, key: string, value: any, context?: { source?: string }) => any;
     fetchOptions?:
       | Omit<RequestInit, 'body' | 'headers' | 'method' | 'signal'>
       | Record<string, any>;
@@ -556,6 +571,9 @@ declare namespace axios {
     http2Options?: Record<string, any> & {
       sessionTimeout?: number;
     };
+    formDataHeaderPolicy?: 'legacy' | 'content-only';
+    redact?: string[];
+    sensitiveHeaders?: string[];
   }
 
   // Alias
@@ -577,6 +595,7 @@ declare namespace axios {
     purge?: RawAxiosRequestHeaders;
     link?: RawAxiosRequestHeaders;
     unlink?: RawAxiosRequestHeaders;
+    query?: RawAxiosRequestHeaders;
   }
 
   interface AxiosDefaults<D = any> extends Omit<AxiosRequestConfig<D>, 'headers'> {
@@ -619,6 +638,9 @@ declare namespace axios {
     promise: Promise<Cancel>;
     reason?: Cancel;
     throwIfRequested(): void;
+    subscribe(listener: (cancel: Cancel | any) => void): void;
+    unsubscribe(listener: (cancel: Cancel | any) => void): void;
+    toAbortSignal(): AbortSignal;
   }
 
   interface CancelTokenSource {
@@ -628,7 +650,7 @@ declare namespace axios {
 
   interface AxiosInterceptorOptions {
     synchronous?: boolean;
-    runWhen?: (config: InternalAxiosRequestConfig) => boolean;
+    runWhen?: ((config: InternalAxiosRequestConfig) => boolean) | null;
   }
 
   type AxiosInterceptorFulfilled<T> = (value: T) => T | Promise<T>;
@@ -649,7 +671,7 @@ declare namespace axios {
     fulfilled: AxiosInterceptorFulfilled<T>;
     rejected?: AxiosInterceptorRejected;
     synchronous: boolean;
-    runWhen?: (config: AxiosRequestConfig) => boolean;
+    runWhen?: ((config: InternalAxiosRequestConfig) => boolean) | null;
   }
 
   interface AxiosInterceptorManager<V> {
@@ -685,14 +707,14 @@ declare namespace axios {
   }
 
   interface AxiosStatic extends AxiosInstance {
-    Cancel: CancelStatic;
+    Cancel: typeof CanceledError;
     CancelToken: CancelTokenStatic;
     Axios: typeof Axios;
     AxiosError: typeof AxiosError;
     CanceledError: typeof CanceledError;
     HttpStatusCode: typeof HttpStatusCode;
     readonly VERSION: string;
-    isCancel(value: any): value is Cancel;
+    isCancel<T = any>(value: any): value is CanceledError<T>;
     all<T>(values: Array<T | Promise<T>>): Promise<T[]>;
     spread<T, R>(callback: (...args: T[]) => R): (array: T[]) => R;
     isAxiosError<T = any, D = any>(payload: any): payload is AxiosError<T, D>;
