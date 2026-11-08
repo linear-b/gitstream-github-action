@@ -147,6 +147,7 @@ out
 .yalc.lock
 
 .DS_Store
+.memsearch
 
 # Allow dist/node_modules for WASM dependencies
 !dist/node_modules/
