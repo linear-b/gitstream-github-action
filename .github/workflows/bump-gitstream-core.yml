@@ -41,9 +41,11 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Set version to ENV
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          echo "VERSION=${{ inputs.version }}" >> "$GITHUB_ENV"
-          echo "BRANCH_NAME=bump-gitstream-core-to-${{ inputs.version }}" >> "$GITHUB_ENV"
+          echo "VERSION=$INPUT_VERSION" >> "$GITHUB_ENV"
+          echo "BRANCH_NAME=bump-gitstream-core-to-$INPUT_VERSION" >> "$GITHUB_ENV"
           echo "LABEL_ARG=" >> "$GITHUB_ENV"
           echo "REVIEWER_ARG=" >> "$GITHUB_ENV"
 
@@ -53,8 +55,9 @@ jobs:
           echo "LABEL_ARG=--label auto-deploy" >> "$GITHUB_ENV"
 
       - name: Set reviewer
+        env:
+          REVIEWER: ${{ inputs.reviewer || github.actor }}
         run: |
-          REVIEWER="${{ inputs.reviewer || github.actor }}"
           echo "REVIEWER_ARG=--reviewer $REVIEWER" >> "$GITHUB_ENV"
 
       - name: Init npmrc
@@ -62,7 +65,7 @@ jobs:
           curl -H "X-JFrog-Art-API: ${{ secrets.ARTIFACTORY_API_KEY }}" https://linearb.jfrog.io/linearb/api/npm/npm-local/auth/linearb >> .npmrc
 
       - name: Install @linearb/gitstream-core@${{ env.VERSION }}
-        run: npm install --save --save-exact @linearb/gitstream-core@${{ env.VERSION }}
+        run: npm install --save --save-exact "@linearb/gitstream-core@$VERSION"
 
       - name: Run Format & Lint & Test & Build & Package
         run: npm run all
@@ -71,18 +74,19 @@ jobs:
         id: create-pr
         env:
           GH_TOKEN: ${{ secrets.CI_USER_GIT_TOKEN }}
+          PR_DESCRIPTION: ${{ inputs.description }}
         run: |
-          echo -e "${{ inputs.description }}" > pr_description.txt
+          echo -e "$PR_DESCRIPTION" > pr_description.txt
           git config --global user.name 'GitHub Actions Bot'
           git config --global user.email 'actions@github.com'
           git add package.json package-lock.json dist/index.js
-          git commit -m "bump @linearb/gitstream-core to ${{ env.VERSION }}"
-          git push origin HEAD:${{ env.BRANCH_NAME }}
+          git commit -m "bump @linearb/gitstream-core to $VERSION"
+          git push origin "HEAD:$BRANCH_NAME"
           PR_URL=$(gh pr create \
             --base develop \
-            --title 'Bump `@linearb/gitstream-core` to `${{ env.VERSION }}`' \
+            --title "Bump \`@linearb/gitstream-core\` to \`$VERSION\`" \
             --body-file pr_description.txt \
-            --head ${{ env.BRANCH_NAME }} ${{ env.REVIEWER_ARG }} ${{ env.LABEL_ARG }})
+            --head "$BRANCH_NAME" $REVIEWER_ARG $LABEL_ARG)
           echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
 
       - name: Output PR URL
